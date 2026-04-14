@@ -9,9 +9,9 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [phase, setPhase] = useState(0); // 0=logo, 1=details, 2=fade-out
 
   useEffect(() => {
-    const t1 = setTimeout(() => setPhase(1), 600);
-    const t2 = setTimeout(() => setPhase(2), 2600);
-    const t3 = setTimeout(() => onComplete(), 3000);
+    const t1 = setTimeout(() => setPhase(1), 1200);
+    const t2 = setTimeout(() => setPhase(2), 5400);
+    const t3 = setTimeout(() => onComplete(), 6000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -39,7 +39,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           <img
             src={wadiLogo}
             alt="WadiAi Logo"
-            className="relative w-24 h-24 rounded-2xl object-contain shadow-2xl"
+            className="relative w-44 h-44 rounded-3xl object-contain drop-shadow-2xl"
           />
         </div>
       </div>
@@ -112,7 +112,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           <div
             className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary"
             style={{
-              animation: "splash-load 2.6s ease-in-out forwards",
+              animation: "splash-load 5.4s ease-in-out forwards",
             }}
           />
         </div>
