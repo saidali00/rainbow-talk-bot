@@ -33,6 +33,7 @@ export async function streamChat({
         model: MODEL,
         messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
         stream: true,
+        max_tokens: 4096,
       }),
     });
 
