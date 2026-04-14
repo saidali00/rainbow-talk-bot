@@ -43,7 +43,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask NexusAI anything..."
+            placeholder="Ask WadiAi anything..."
             disabled={disabled}
             rows={1}
             className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
@@ -58,7 +58,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         </div>
       </div>
       <p className="text-center text-xs text-muted-foreground mt-2">
-        NexusAI can make mistakes. Consider checking important information.
+        WadiAi can make mistakes. Consider checking important information.
       </p>
     </div>
   );
