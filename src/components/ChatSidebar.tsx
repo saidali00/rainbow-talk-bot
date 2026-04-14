@@ -83,7 +83,7 @@ const ChatSidebar = ({
         </nav>
 
         <div className="p-3 border-t border-sidebar-dark-hover text-xs text-muted-foreground text-center">
-          Powered by WadiAi
+          Powered by Xenonymous
         </div>
       </aside>
 
