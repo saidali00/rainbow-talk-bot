@@ -3,7 +3,7 @@ import ChatSidebar, { Conversation } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import TopMenuBar from "@/components/TopMenuBar";
+
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
 import { toast } from "@/hooks/use-toast";
 
@@ -123,7 +123,7 @@ const Index = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <TopMenuBar onToggleSidebar={() => setSidebarOpen((p) => !p)} />
+        
 
         {activeMessages.length === 0 ? (
           <>
