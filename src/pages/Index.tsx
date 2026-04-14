@@ -3,6 +3,7 @@ import ChatSidebar, { Conversation } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import SplashScreen from "@/components/SplashScreen";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
 import { toast } from "@/hooks/use-toast";
@@ -14,6 +15,7 @@ interface Message {
 }
 
 const Index = () => {
+  const [showSplash, setShowSplash] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
@@ -111,6 +113,8 @@ const Index = () => {
   };
 
   return (
+    <>
+      {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
     <div className="flex h-screen overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
@@ -154,6 +158,7 @@ const Index = () => {
         )}
       </main>
     </div>
+    </>
   );
 };
 
