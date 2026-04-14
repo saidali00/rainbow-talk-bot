@@ -19,6 +19,7 @@ const WelcomeScreen = ({ onSuggestionClick }: WelcomeScreenProps) => {
         <img src={wadiLogo} alt="WadiAi Logo" className="w-20 h-20 rounded-2xl object-contain" />
       </div>
       <h2 className="text-3xl font-bold gradient-text mb-1">WadiAi</h2>
+      <p className="text-muted-foreground text-xs mb-1">by Xenonymous</p>
       <p className="text-muted-foreground text-sm mb-8">How can I help you today?</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">

@@ -3,6 +3,9 @@ import ChatSidebar, { Conversation } from "@/components/ChatSidebar";
 import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
+import TopMenuBar from "@/components/TopMenuBar";
+import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
+import { toast } from "@/hooks/use-toast";
 
 interface Message {
   id: string;
@@ -10,14 +13,8 @@ interface Message {
   content: string;
 }
 
-const MOCK_RESPONSES = [
-  "That's a great question! Let me think about this...\n\nHere's what I can tell you:\n\n**Key Points:**\n1. This is a demo response showcasing markdown rendering\n2. The actual AI integration can be added with Lovable Cloud\n3. The interface supports full markdown including `code blocks`\n\n```python\ndef hello():\n    print('Hello from NexusAI!')\n```\n\nWould you like me to elaborate on any of these points?",
-  "I'd be happy to help with that! 🚀\n\nHere's my analysis:\n\n- **First**, let's consider the context\n- **Second**, we should evaluate the options\n- **Third**, I'll provide a recommendation\n\n> The best approach often depends on your specific use case.\n\nLet me know if you'd like to dive deeper into any aspect!",
-  "Absolutely! Here's a comprehensive breakdown:\n\n### Overview\nThis is a fascinating topic with many dimensions.\n\n### Details\n| Aspect | Description |\n|--------|------------|\n| Speed | Very fast |\n| Quality | High |\n| Cost | Efficient |\n\n### Conclusion\nI recommend starting with the basics and building up from there. Feel free to ask follow-up questions!",
-];
-
 const Index = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messagesByConv, setMessagesByConv] = useState<Record<string, Message[]>>({});
@@ -44,48 +41,59 @@ const Index = () => {
     return id;
   };
 
-  const simulateStream = (convId: string, fullText: string) => {
-    setIsStreaming(true);
-    const assistantId = crypto.randomUUID();
-    setMessagesByConv((prev) => ({
-      ...prev,
-      [convId]: [...(prev[convId] || []), { id: assistantId, role: "assistant", content: "" }],
-    }));
-
-    let i = 0;
-    const interval = setInterval(() => {
-      const chunkSize = Math.floor(Math.random() * 4) + 1;
-      const chunk = fullText.slice(i, i + chunkSize);
-      i += chunkSize;
-
-      setMessagesByConv((prev) => ({
-        ...prev,
-        [convId]: prev[convId].map((m) =>
-          m.id === assistantId ? { ...m, content: fullText.slice(0, i) } : m
-        ),
-      }));
-
-      if (i >= fullText.length) {
-        clearInterval(interval);
-        setIsStreaming(false);
-      }
-    }, 20);
-  };
-
-  const handleSend = (text: string) => {
+  const handleSend = async (text: string) => {
     let convId = activeConvId;
     if (!convId) {
       convId = createConversation(text);
     }
 
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    const assistantId = crypto.randomUUID();
+
     setMessagesByConv((prev) => ({
       ...prev,
       [convId!]: [...(prev[convId!] || []), userMsg],
     }));
 
-    const response = MOCK_RESPONSES[Math.floor(Math.random() * MOCK_RESPONSES.length)];
-    setTimeout(() => simulateStream(convId!, response), 600);
+    setIsStreaming(true);
+
+    // Build history for API
+    const history: AIChatMessage[] = [
+      ...(messagesByConv[convId!] || []).map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: m.content,
+      })),
+      { role: "user" as const, content: text },
+    ];
+
+    // Add empty assistant message
+    setMessagesByConv((prev) => ({
+      ...prev,
+      [convId!]: [...(prev[convId!] || []), userMsg, { id: assistantId, role: "assistant", content: "" }],
+    }));
+
+    let fullContent = "";
+
+    await streamChat({
+      messages: history,
+      onDelta: (chunk) => {
+        fullContent += chunk;
+        const current = fullContent;
+        setMessagesByConv((prev) => ({
+          ...prev,
+          [convId!]: prev[convId!].map((m) =>
+            m.id === assistantId ? { ...m, content: current } : m
+          ),
+        }));
+      },
+      onDone: () => {
+        setIsStreaming(false);
+      },
+      onError: (error) => {
+        setIsStreaming(false);
+        toast({ title: "Error", description: error, variant: "destructive" });
+      },
+    });
   };
 
   const handleNewChat = () => {
@@ -115,6 +123,8 @@ const Index = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
+        <TopMenuBar onToggleSidebar={() => setSidebarOpen((p) => !p)} />
+
         {activeMessages.length === 0 ? (
           <>
             <WelcomeScreen onSuggestionClick={handleSend} />
