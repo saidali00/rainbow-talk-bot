@@ -112,7 +112,7 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
           <div
             className="h-full rounded-full bg-gradient-to-r from-primary via-accent to-primary"
             style={{
-              animation: "splash-load 2.6s ease-in-out forwards",
+              animation: "splash-load 5.4s ease-in-out forwards",
             }}
           />
         </div>
