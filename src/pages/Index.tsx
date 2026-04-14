@@ -52,14 +52,7 @@ const Index = () => {
     const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
     const assistantId = crypto.randomUUID();
 
-    setMessagesByConv((prev) => ({
-      ...prev,
-      [convId!]: [...(prev[convId!] || []), userMsg],
-    }));
-
-    setIsStreaming(true);
-
-    // Build history for API
+    // Build history for API before updating state
     const history: AIChatMessage[] = [
       ...(messagesByConv[convId!] || []).map((m) => ({
         role: m.role as "user" | "assistant",
@@ -68,12 +61,17 @@ const Index = () => {
       { role: "user" as const, content: text },
     ];
 
-    // Add empty assistant message
+    // Add user message + empty assistant message in one update
     setMessagesByConv((prev) => ({
       ...prev,
-      [convId!]: [...(prev[convId!] || []), userMsg, { id: assistantId, role: "assistant", content: "" }],
+      [convId!]: [
+        ...(prev[convId!] || []),
+        userMsg,
+        { id: assistantId, role: "assistant", content: "" },
+      ],
     }));
 
+    setIsStreaming(true);
     let fullContent = "";
 
     await streamChat({

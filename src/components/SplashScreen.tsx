@@ -13,7 +13,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
     const t2 = setTimeout(() => setPhase(2), 2600);
     const t3 = setTimeout(() => onComplete(), 3000);
     return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
-  }, [onComplete]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div
