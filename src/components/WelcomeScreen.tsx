@@ -1,4 +1,5 @@
-import { Zap, Code, Lightbulb, Pen } from "lucide-react";
+import { Code, Lightbulb, Pen, Zap } from "lucide-react";
+import wadiLogo from "@/assets/wadi-ai-logo.png";
 
 interface WelcomeScreenProps {
   onSuggestionClick: (text: string) => void;
@@ -15,11 +16,9 @@ const WelcomeScreen = ({ onSuggestionClick }: WelcomeScreenProps) => {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in-up">
       <div className="mb-2">
-        <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center">
-          <Zap size={28} className="text-primary-foreground" />
-        </div>
+        <img src={wadiLogo} alt="WadiAi Logo" className="w-20 h-20 rounded-2xl object-contain" />
       </div>
-      <h2 className="text-3xl font-bold gradient-text mb-1">NexusAI</h2>
+      <h2 className="text-3xl font-bold gradient-text mb-1">WadiAi</h2>
       <p className="text-muted-foreground text-sm mb-8">How can I help you today?</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">

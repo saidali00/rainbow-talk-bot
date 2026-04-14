@@ -42,7 +42,7 @@ const ChatSidebar = ({
         } overflow-hidden`}
       >
         <div className="flex items-center justify-between p-4 border-b border-sidebar-dark-hover">
-          <h1 className="text-lg font-semibold gradient-text">NexusAI</h1>
+          <h1 className="text-lg font-semibold gradient-text">WadiAi</h1>
           <button onClick={onToggle} className="p-1.5 rounded-lg hover:bg-sidebar-dark-hover transition-colors">
             <X size={18} />
           </button>
@@ -83,7 +83,7 @@ const ChatSidebar = ({
         </nav>
 
         <div className="p-3 border-t border-sidebar-dark-hover text-xs text-muted-foreground text-center">
-          Powered by NexusAI
+          Powered by WadiAi
         </div>
       </aside>
 
