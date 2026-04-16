@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Sparkles } from "lucide-react";
+import { Send, Mic, MicOff, Sparkles } from "lucide-react";
 
 interface ChatInputProps {
   onSend: (message: string) => void;
