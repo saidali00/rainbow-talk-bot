@@ -144,6 +144,7 @@ const Index = () => {
                     role={msg.role}
                     content={msg.content}
                     isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant"}
+                    onRelatedClick={handleSend}
                   />
                 ))}
                 <div ref={messagesEndRef} />

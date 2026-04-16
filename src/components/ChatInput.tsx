@@ -31,6 +31,19 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
     }
   };
 
+  const handleVoice = () => {
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
+      return;
+    }
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.onresult = (event: any) => {
+      setValue((prev) => prev + event.results[0][0].transcript);
+    };
+    recognition.start();
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
       <div className="relative gradient-border rounded-2xl">
@@ -48,6 +61,14 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
             rows={1}
             className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
           />
+          <button
+            onClick={handleVoice}
+            disabled={disabled}
+            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+            title="Voice input"
+          >
+            <Mic size={16} />
+          </button>
           <button
             onClick={handleSubmit}
             disabled={disabled || !value.trim()}
