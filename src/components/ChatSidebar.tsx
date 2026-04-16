@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon } from "lucide-react";
 
 export interface Conversation {
   id: string;
@@ -29,6 +29,11 @@ const ChatSidebar = ({
   onToggle,
 }: ChatSidebarProps) => {
   const [view, setView] = useState<SidebarView>("menu");
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+  }, [dark]);
 
   const handleClose = () => {
     onToggle();
@@ -83,6 +88,14 @@ const ChatSidebar = ({
               >
                 <Info size={18} className="opacity-70" />
                 <span>About</span>
+              </button>
+
+              <button
+                onClick={() => setDark((d) => !d)}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                {dark ? <Sun size={18} className="opacity-70" /> : <Moon size={18} className="opacity-70" />}
+                <span>{dark ? "Light Mode" : "Dark Mode"}</span>
               </button>
             </nav>
           </div>
@@ -177,7 +190,7 @@ const ChatSidebar = ({
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider opacity-50">Built With</h3>
                 <div className="flex flex-wrap gap-2">
-                  {["React", "TypeScript", "Tailwind CSS", "Vite", "OpenRouter API"].map((tech) => (
+                  {["Python", "Neural Link", "Java", "React", "TypeScript", "Rust", "Swift", "Kotlin", "Go", "Tailwind CSS"].map((tech) => (
                     <span key={tech} className="px-3 py-1.5 text-xs rounded-full border border-sidebar-dark-hover bg-sidebar-dark-hover/50">
                       {tech}
                     </span>
