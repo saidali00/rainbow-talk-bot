@@ -12,6 +12,7 @@ interface Message {
   id: string;
   role: "user" | "assistant";
   content: string;
+  image?: string;
 }
 
 const Index = () => {
@@ -43,13 +44,13 @@ const Index = () => {
     return id;
   };
 
-  const handleSend = async (text: string) => {
+  const handleSend = async (text: string, image?: string) => {
     let convId = activeConvId;
     if (!convId) {
       convId = createConversation(text);
     }
 
-    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text, image };
     const assistantId = crypto.randomUUID();
 
     // Build history for API before updating state
@@ -143,6 +144,7 @@ const Index = () => {
                     key={msg.id}
                     role={msg.role}
                     content={msg.content}
+                    image={msg.image}
                     isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant"}
                     onRelatedClick={handleSend}
                   />

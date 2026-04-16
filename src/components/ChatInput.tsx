@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Sparkles } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image, X } from "lucide-react";
 
 interface ChatInputProps {
-  onSend: (message: string) => void;
+  onSend: (message: string, image?: string) => void;
   disabled?: boolean;
 }
 
 const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const [value, setValue] = useState("");
+  const [attachedImage, setAttachedImage] = useState<string | null>(null);
+  const [showAttachMenu, setShowAttachMenu] = useState(false);
+  const [imageAnimating, setImageAnimating] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -19,9 +23,10 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
 
   const handleSubmit = () => {
     const trimmed = value.trim();
-    if (!trimmed || disabled) return;
-    onSend(trimmed);
+    if ((!trimmed && !attachedImage) || disabled) return;
+    onSend(trimmed || "What's in this image?", attachedImage || undefined);
     setValue("");
+    setAttachedImage(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -32,9 +37,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   };
 
   const handleVoice = () => {
-    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) {
-      return;
-    }
+    if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.lang = "en-US";
@@ -44,10 +47,81 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
     recognition.start();
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageAnimating(true);
+      setAttachedImage(reader.result as string);
+      setTimeout(() => setImageAnimating(false), 500);
+    };
+    reader.readAsDataURL(file);
+    setShowAttachMenu(false);
+    e.target.value = "";
+  };
+
+  const removeImage = () => {
+    setAttachedImage(null);
+  };
+
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
+      {/* Attached image preview */}
+      {attachedImage && (
+        <div className={`mb-2 inline-block relative ${imageAnimating ? "animate-fade-in-up" : ""}`}>
+          <div className="relative rounded-xl overflow-hidden border border-border shadow-md group">
+            <img src={attachedImage} alt="Attached" className="max-h-32 max-w-48 object-cover rounded-xl" />
+            <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/20 transition-colors" />
+            <button
+              onClick={removeImage}
+              className="absolute top-1 right-1 p-1 rounded-full bg-foreground/70 text-background hover:bg-foreground/90 transition-all scale-0 group-hover:scale-100"
+            >
+              <X size={12} />
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="relative gradient-border rounded-2xl">
-        <div className="flex items-end gap-2 bg-card rounded-2xl p-2">
+        <div className="flex items-end gap-1 bg-card rounded-2xl p-2">
+          {/* Plus button for attachments */}
+          <div className="relative">
+            <button
+              onClick={() => setShowAttachMenu((p) => !p)}
+              disabled={disabled}
+              className={`p-2 rounded-xl transition-all ${
+                showAttachMenu
+                  ? "bg-primary text-primary-foreground rotate-45"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted"
+              }`}
+              title="Attach"
+            >
+              <Plus size={18} />
+            </button>
+
+            {/* Attach menu */}
+            {showAttachMenu && (
+              <div className="absolute bottom-full left-0 mb-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in-up z-10">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
+                >
+                  <Image size={16} className="text-primary" />
+                  <span>Attach Photo</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+          />
+
           <div className="p-2 text-secondary">
             <Sparkles size={18} />
           </div>
@@ -71,7 +145,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
           </button>
           <button
             onClick={handleSubmit}
-            disabled={disabled || !value.trim()}
+            disabled={disabled || (!value.trim() && !attachedImage)}
             className="p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all"
           >
             <Send size={16} />

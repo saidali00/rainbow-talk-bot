@@ -1,5 +1,7 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Bot, User, Copy, Check, Volume2, VolumeX } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
@@ -8,9 +10,10 @@ interface ChatMessageProps {
   content: string;
   isStreaming?: boolean;
   onRelatedClick?: (question: string) => void;
+  image?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -63,14 +66,66 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick }: ChatMessage
       </div>
 
       <div className="max-w-[75%] space-y-2">
+        {/* Attached image */}
+        {image && (
+          <div className="rounded-2xl overflow-hidden border border-border shadow-sm animate-fade-in-up">
+            <img src={image} alt="Attached" className="max-w-full max-h-60 object-cover rounded-2xl" />
+          </div>
+        )}
+
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
             <p>{content}</p>
           </div>
         ) : (
           <div className="text-sm leading-relaxed text-foreground">
-            <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs prose-pre:bg-sidebar-dark prose-pre:text-sidebar-dark-foreground prose-pre:rounded-xl prose-pre:p-4 prose-pre:border prose-pre:border-border prose-pre:shadow-sm">
-              <ReactMarkdown>{mainContent}</ReactMarkdown>
+            <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs">
+              <ReactMarkdown
+                components={{
+                  code({ node, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || "");
+                    const codeString = String(children).replace(/\n$/, "");
+                    if (match) {
+                      return (
+                        <div className="relative group my-3 rounded-xl overflow-hidden border border-border shadow-sm">
+                          <div className="flex items-center justify-between px-4 py-2 bg-muted/80 border-b border-border">
+                            <span className="text-xs font-medium text-muted-foreground">{match[1]}</span>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(codeString);
+                                toast({ title: "Code copied!" });
+                              }}
+                              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                            >
+                              <Copy size={12} /> Copy
+                            </button>
+                          </div>
+                          <SyntaxHighlighter
+                            style={oneDark}
+                            language={match[1]}
+                            PreTag="div"
+                            customStyle={{
+                              margin: 0,
+                              borderRadius: 0,
+                              padding: "1rem",
+                              fontSize: "0.8rem",
+                            }}
+                          >
+                            {codeString}
+                          </SyntaxHighlighter>
+                        </div>
+                      );
+                    }
+                    return (
+                      <code className={className} {...props}>
+                        {children}
+                      </code>
+                    );
+                  },
+                }}
+              >
+                {mainContent}
+              </ReactMarkdown>
             </div>
             {isStreaming && (
               <span className="inline-block w-1.5 h-4 bg-secondary rounded-full animate-pulse-glow ml-1 align-middle" />
