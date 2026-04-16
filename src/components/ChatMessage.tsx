@@ -63,24 +63,20 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick }: ChatMessage
       </div>
 
       <div className="max-w-[75%] space-y-2">
-        <div
-          className={`rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-            isUser
-              ? "bg-chat-user text-chat-user-foreground rounded-tr-md"
-              : "bg-chat-assistant-bg text-chat-assistant-foreground shadow-sm border border-border rounded-tl-md"
-          }`}
-        >
-          {isUser ? (
+        {isUser ? (
+          <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
             <p>{content}</p>
-          ) : (
-            <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-pre:bg-sidebar-dark prose-pre:text-sidebar-dark-foreground">
+          </div>
+        ) : (
+          <div className="text-sm leading-relaxed text-foreground">
+            <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs prose-pre:bg-sidebar-dark prose-pre:text-sidebar-dark-foreground prose-pre:rounded-xl prose-pre:p-4 prose-pre:border prose-pre:border-border prose-pre:shadow-sm">
               <ReactMarkdown>{mainContent}</ReactMarkdown>
             </div>
-          )}
-          {isStreaming && (
-            <span className="inline-block w-1.5 h-4 bg-secondary rounded-full animate-pulse-glow ml-1 align-middle" />
-          )}
-        </div>
+            {isStreaming && (
+              <span className="inline-block w-1.5 h-4 bg-secondary rounded-full animate-pulse-glow ml-1 align-middle" />
+            )}
+          </div>
+        )}
 
         {/* Action buttons */}
         {!isStreaming && content && (
