@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 
 export interface Conversation {
   id: string;
