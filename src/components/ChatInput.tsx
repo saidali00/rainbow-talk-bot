@@ -130,7 +130,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
                 >
-                  <Image size={16} className="text-primary" />
+                  <ImageIcon size={16} className="text-primary" />
                   <span>Attach Photo</span>
                 </button>
               </div>
