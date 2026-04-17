@@ -26,16 +26,51 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
   };
 
   const handleSpeak = () => {
+    if (!("speechSynthesis" in window)) {
+      toast({ title: "Speech not supported", description: "Your browser doesn't support text-to-speech.", variant: "destructive" });
+      return;
+    }
     if (speaking) {
       window.speechSynthesis.cancel();
       setSpeaking(false);
       return;
     }
-    const utterance = new SpeechSynthesisUtterance(content.replace(/[#*`_~]/g, ""));
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
+    // Always cancel any prior queued speech
+    window.speechSynthesis.cancel();
+
+    // Strip markdown for cleaner speech
+    const cleanText = mainContent
+      .replace(/```[\s\S]*?```/g, " code block ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/[#*_~>]/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .trim();
+
+    if (!cleanText) return;
+
+    // Chunk long text (browsers cut off ~200 chars)
+    const chunks = cleanText.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [cleanText];
+    let index = 0;
+    const speakNext = () => {
+      if (index >= chunks.length) {
+        setSpeaking(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(chunks[index]);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.lang = "en-US";
+      utterance.onend = () => {
+        index++;
+        speakNext();
+      };
+      utterance.onerror = () => {
+        setSpeaking(false);
+      };
+      window.speechSynthesis.speak(utterance);
+    };
     setSpeaking(true);
+    speakNext();
   };
 
   // Parse related questions from content
