@@ -2,8 +2,9 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Bot, User, Copy, Check, Volume2, VolumeX } from "lucide-react";
+import { Bot, User, Copy, Check, Volume2, VolumeX, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import MountainLoader from "./MountainLoader";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -11,9 +12,12 @@ interface ChatMessageProps {
   isStreaming?: boolean;
   onRelatedClick?: (question: string) => void;
   image?: string;
+  generatedImage?: string;
+  generatingImage?: boolean;
+  imagePrompt?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
