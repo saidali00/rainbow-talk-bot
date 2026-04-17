@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, LogOut } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "@/hooks/use-toast";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon } from "lucide-react";
 
 export interface Conversation {
   id: string;
@@ -32,12 +30,6 @@ const ChatSidebar = ({
 }: ChatSidebarProps) => {
   const [view, setView] = useState<SidebarView>("menu");
   const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
-  const { profile, user, signOut } = useAuth();
-
-  const handleSignOut = async () => {
-    await signOut();
-    toast({ title: "Signed out", description: "See you soon!" });
-  };
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -216,37 +208,15 @@ const ChatSidebar = ({
           </div>
         )}
 
-        {/* Profile + Footer */}
-        {user && (
-          <div className="border-t border-sidebar-dark-hover p-3 space-y-2">
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-sidebar-dark-hover/40">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover ring-2 ring-primary/40" />
-              ) : (
-                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center text-primary-foreground font-bold text-sm">
-                  {(profile?.display_name || profile?.email || "U")[0]?.toUpperCase()}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{profile?.display_name || "User"}</p>
-                <p className="text-xs opacity-50 truncate">{profile?.email}</p>
-              </div>
-              <button
-                onClick={handleSignOut}
-                title="Sign out"
-                className="p-2 rounded-lg hover:bg-destructive/20 hover:text-destructive transition-colors"
-              >
-                <LogOut size={16} />
-              </button>
-            </div>
-            <div className="text-xs text-center">
-              <span className="text-muted-foreground">Powered by </span>
-              <span className="font-bold gradient-text">WadiAi</span>
-              <span className="text-muted-foreground"> × </span>
-              <span className="font-bold text-sidebar-dark-foreground">Xenonymous</span>
-            </div>
+        {/* Footer */}
+        <div className="border-t border-sidebar-dark-hover p-3">
+          <div className="text-xs text-center">
+            <span className="opacity-60">Powered by </span>
+            <span className="font-bold gradient-text">WadiAi</span>
+            <span className="opacity-60"> × </span>
+            <span className="font-bold">Xenonymous</span>
           </div>
-        )}
+        </div>
       </aside>
 
       {!isOpen && (

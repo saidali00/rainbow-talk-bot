@@ -1,17 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2 } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   onSend: (message: string, image?: string) => void;
+  onGenerateImage?: (prompt: string) => void;
   disabled?: boolean;
 }
 
-const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
+const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -25,6 +27,12 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const handleSubmit = () => {
     const trimmed = value.trim();
     if ((!trimmed && !attachedImage) || disabled) return;
+    if (imageMode && trimmed && onGenerateImage) {
+      onGenerateImage(trimmed);
+      setValue("");
+      setImageMode(false);
+      return;
+    }
     onSend(trimmed || "What's in this image?", attachedImage || undefined);
     setValue("");
     setAttachedImage(null);
@@ -106,6 +114,17 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
         </div>
       )}
 
+      {/* Image-create mode chip */}
+      {imageMode && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/40 bg-primary/10 text-primary text-xs font-medium animate-scale-in">
+          <Mountain size={14} className="animate-bounce-slow" />
+          <span>Image Create mode • describe what to paint</span>
+          <button onClick={() => setImageMode(false)} className="ml-1 hover:bg-primary/20 rounded-full p-0.5">
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       <div className="relative gradient-border rounded-2xl">
         <div className="flex items-end gap-1 bg-card rounded-2xl p-2">
           {/* Plus button for attachments */}
@@ -125,13 +144,25 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
 
             {/* Attach menu */}
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in-up z-10">
+              <div className="absolute bottom-full left-0 mb-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in-up z-10 min-w-[200px]">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => { fileInputRef.current?.click(); }}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
                 >
                   <ImageIcon size={16} className="text-primary" />
                   <span>Attach Photo</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setImageMode(true);
+                    setShowAttachMenu(false);
+                    setTimeout(() => textareaRef.current?.focus(), 50);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap border-t border-border"
+                >
+                  <Mountain size={16} className="text-secondary" />
+                  <span>Image Create</span>
+                  <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-bold">AI</span>
                 </button>
               </div>
             )}
@@ -145,15 +176,15 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
             className="hidden"
           />
 
-          <div className="p-2 text-secondary">
-            <Sparkles size={18} />
+          <div className={`p-2 ${imageMode ? "text-primary" : "text-secondary"}`}>
+            {imageMode ? <Mountain size={18} /> : <Sparkles size={18} />}
           </div>
           <textarea
             ref={textareaRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask WadiAi anything..."
+            placeholder={imageMode ? "Describe an image to create..." : "Ask WadiAi anything..."}
             disabled={disabled}
             rows={1}
             className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
@@ -169,9 +200,11 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
           <button
             onClick={handleSubmit}
             disabled={disabled || (!value.trim() && !attachedImage)}
-            className="p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all"
+            className={`p-2.5 rounded-xl text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all ${
+              imageMode ? "bg-gradient-to-br from-primary via-secondary to-accent" : "bg-primary"
+            }`}
           >
-            <Send size={16} />
+            {imageMode ? <Mountain size={16} /> : <Send size={16} />}
           </button>
         </div>
       </div>

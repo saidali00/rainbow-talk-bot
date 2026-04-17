@@ -6,6 +6,7 @@ import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
 interface Message {
@@ -13,6 +14,9 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   image?: string;
+  generatedImage?: string;
+  generatingImage?: boolean;
+  imagePrompt?: string;
 }
 
 const Index = () => {
@@ -113,6 +117,61 @@ const Index = () => {
     });
   };
 
+  const handleGenerateImage = async (prompt: string) => {
+    let convId = activeConvId;
+    if (!convId) convId = createConversation(`🎨 ${prompt}`);
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: `🎨 Create: ${prompt}` };
+    const assistantId = crypto.randomUUID();
+
+    setMessagesByConv((prev) => ({
+      ...prev,
+      [convId!]: [
+        ...(prev[convId!] || []),
+        userMsg,
+        { id: assistantId, role: "assistant", content: "", generatingImage: true, imagePrompt: prompt },
+      ],
+    }));
+
+    setIsStreaming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-image", {
+        body: { prompt },
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.imageUrl) throw new Error("No image returned");
+
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? {
+                ...m,
+                generatingImage: false,
+                generatedImage: data.imageUrl,
+                content: data.text || `Here's your image: "${prompt}"`,
+              }
+            : m
+        ),
+      }));
+      toast({ title: "✨ Image created!", description: "Your masterpiece is ready." });
+    } catch (e: any) {
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? { ...m, generatingImage: false, content: `Sorry, I couldn't create that image. ${e?.message || ""}` }
+            : m
+        ),
+      }));
+      toast({ title: "Image generation failed", description: e?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
   const handleNewChat = () => {
     setActiveConvId(null);
   };
@@ -148,7 +207,7 @@ const Index = () => {
           <>
             <WelcomeScreen onSuggestionClick={handleSend} />
             <div className="pb-6">
-              <ChatInput onSend={handleSend} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
             </div>
           </>
         ) : (
@@ -161,7 +220,10 @@ const Index = () => {
                     role={msg.role}
                     content={msg.content}
                     image={msg.image}
-                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant"}
+                    generatedImage={msg.generatedImage}
+                    generatingImage={msg.generatingImage}
+                    imagePrompt={msg.imagePrompt}
+                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage}
                     onRelatedClick={handleSend}
                   />
                 ))}
@@ -169,7 +231,7 @@ const Index = () => {
               </div>
             </div>
             <div className="pb-6 pt-2">
-              <ChatInput onSend={handleSend} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
             </div>
           </>
         )}

@@ -2,8 +2,9 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
-import { Bot, User, Copy, Check, Volume2, VolumeX } from "lucide-react";
+import { Bot, User, Copy, Check, Volume2, VolumeX, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import MountainLoader from "./MountainLoader";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -11,9 +12,12 @@ interface ChatMessageProps {
   isStreaming?: boolean;
   onRelatedClick?: (question: string) => void;
   image?: string;
+  generatedImage?: string;
+  generatingImage?: boolean;
+  imagePrompt?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
@@ -102,6 +106,24 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
         {image && (
           <div className="rounded-2xl overflow-hidden border border-border shadow-sm animate-fade-in-up">
             <img src={image} alt="Attached" className="max-w-full max-h-60 object-cover rounded-2xl" />
+          </div>
+        )}
+
+        {/* Generating image - mountain skeleton loader */}
+        {generatingImage && <MountainLoader prompt={imagePrompt || "Creating image..."} />}
+
+        {/* Generated image result */}
+        {generatedImage && !generatingImage && (
+          <div className="relative group rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg animate-scale-in">
+            <img src={generatedImage} alt={imagePrompt || "Generated"} className="max-w-full max-h-96 object-contain bg-muted" />
+            <a
+              href={generatedImage}
+              download={`wadiai-${Date.now()}.png`}
+              className="absolute top-2 right-2 p-2 rounded-xl bg-foreground/70 text-background opacity-0 group-hover:opacity-100 transition-opacity hover:bg-foreground"
+              title="Download"
+            >
+              <Download size={14} />
+            </a>
           </div>
         )}
 
