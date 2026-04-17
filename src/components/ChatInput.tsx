@@ -176,15 +176,15 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
             className="hidden"
           />
 
-          <div className="p-2 text-secondary">
-            <Sparkles size={18} />
+          <div className={`p-2 ${imageMode ? "text-primary" : "text-secondary"}`}>
+            {imageMode ? <Mountain size={18} /> : <Sparkles size={18} />}
           </div>
           <textarea
             ref={textareaRef}
             value={value}
             onChange={(e) => setValue(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask WadiAi anything..."
+            placeholder={imageMode ? "Describe an image to create..." : "Ask WadiAi anything..."}
             disabled={disabled}
             rows={1}
             className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
@@ -200,9 +200,11 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
           <button
             onClick={handleSubmit}
             disabled={disabled || (!value.trim() && !attachedImage)}
-            className="p-2.5 rounded-xl bg-primary text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all"
+            className={`p-2.5 rounded-xl text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all ${
+              imageMode ? "bg-gradient-to-br from-primary via-secondary to-accent" : "bg-primary"
+            }`}
           >
-            <Send size={16} />
+            {imageMode ? <Mountain size={16} /> : <Send size={16} />}
           </button>
         </div>
       </div>
