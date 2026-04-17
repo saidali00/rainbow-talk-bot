@@ -109,6 +109,24 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
           </div>
         )}
 
+        {/* Generating image - mountain skeleton loader */}
+        {generatingImage && <MountainLoader prompt={imagePrompt || "Creating image..."} />}
+
+        {/* Generated image result */}
+        {generatedImage && !generatingImage && (
+          <div className="relative group rounded-2xl overflow-hidden border-2 border-primary/30 shadow-lg animate-scale-in">
+            <img src={generatedImage} alt={imagePrompt || "Generated"} className="max-w-full max-h-96 object-contain bg-muted" />
+            <a
+              href={generatedImage}
+              download={`wadiai-${Date.now()}.png`}
+              className="absolute top-2 right-2 p-2 rounded-xl bg-foreground/70 text-background opacity-0 group-hover:opacity-100 transition-opacity hover:bg-foreground"
+              title="Download"
+            >
+              <Download size={14} />
+            </a>
+          </div>
+        )}
+
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
             <p>{content}</p>
