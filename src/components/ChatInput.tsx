@@ -1,17 +1,19 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2 } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   onSend: (message: string, image?: string) => void;
+  onGenerateImage?: (prompt: string) => void;
   disabled?: boolean;
 }
 
-const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
+const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [imageMode, setImageMode] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -25,6 +27,12 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const handleSubmit = () => {
     const trimmed = value.trim();
     if ((!trimmed && !attachedImage) || disabled) return;
+    if (imageMode && trimmed && onGenerateImage) {
+      onGenerateImage(trimmed);
+      setValue("");
+      setImageMode(false);
+      return;
+    }
     onSend(trimmed || "What's in this image?", attachedImage || undefined);
     setValue("");
     setAttachedImage(null);
