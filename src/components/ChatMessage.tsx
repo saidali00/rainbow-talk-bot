@@ -18,6 +18,21 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
+  // Parse related questions from content
+  let mainContent = content;
+  let relatedQuestions: string[] = [];
+
+  if (!isUser && !isStreaming) {
+    const relatedMatch = content.match(/---\s*\n\s*\*\*Related[^*]*\*\*\s*\n([\s\S]*?)$/i);
+    if (relatedMatch) {
+      mainContent = content.slice(0, relatedMatch.index).trim();
+      relatedQuestions = relatedMatch[1]
+        .split("\n")
+        .map((l) => l.replace(/^[-•*]\s*/, "").trim())
+        .filter(Boolean);
+    }
+  }
+
   const handleCopy = () => {
     navigator.clipboard.writeText(content);
     setCopied(true);
@@ -35,10 +50,8 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
       setSpeaking(false);
       return;
     }
-    // Always cancel any prior queued speech
     window.speechSynthesis.cancel();
 
-    // Strip markdown for cleaner speech
     const cleanText = mainContent
       .replace(/```[\s\S]*?```/g, " code block ")
       .replace(/`([^`]+)`/g, "$1")
@@ -48,7 +61,6 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
 
     if (!cleanText) return;
 
-    // Chunk long text (browsers cut off ~200 chars)
     const chunks = cleanText.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [cleanText];
     let index = 0;
     const speakNext = () => {
@@ -72,21 +84,6 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
     setSpeaking(true);
     speakNext();
   };
-
-  // Parse related questions from content
-  let mainContent = content;
-  let relatedQuestions: string[] = [];
-
-  if (!isUser && !isStreaming) {
-    const relatedMatch = content.match(/---\s*\n\s*\*\*Related[^*]*\*\*\s*\n([\s\S]*?)$/i);
-    if (relatedMatch) {
-      mainContent = content.slice(0, relatedMatch.index).trim();
-      relatedQuestions = relatedMatch[1]
-        .split("\n")
-        .map((l) => l.replace(/^[-•*]\s*/, "").trim())
-        .filter(Boolean);
-    }
-  }
 
   return (
     <div className={`flex gap-3 animate-fade-in-up ${isUser ? "flex-row-reverse" : ""}`}>
