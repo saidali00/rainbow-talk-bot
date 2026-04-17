@@ -12,9 +12,13 @@ At the end of every response, add a separator and 2-3 related follow-up question
 - Second related question here
 - Third related question here`;
 
+export type ChatContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } };
+
 export type ChatMessage = {
   role: "user" | "assistant" | "system";
-  content: string;
+  content: string | ChatContentPart[];
 };
 
 export async function streamChat({
