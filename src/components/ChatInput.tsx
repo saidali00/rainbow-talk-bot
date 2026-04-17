@@ -114,6 +114,17 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
         </div>
       )}
 
+      {/* Image-create mode chip */}
+      {imageMode && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-primary/40 bg-primary/10 text-primary text-xs font-medium animate-scale-in">
+          <Mountain size={14} className="animate-bounce-slow" />
+          <span>Image Create mode • describe what to paint</span>
+          <button onClick={() => setImageMode(false)} className="ml-1 hover:bg-primary/20 rounded-full p-0.5">
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       <div className="relative gradient-border rounded-2xl">
         <div className="flex items-end gap-1 bg-card rounded-2xl p-2">
           {/* Plus button for attachments */}
@@ -133,13 +144,25 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
 
             {/* Attach menu */}
             {showAttachMenu && (
-              <div className="absolute bottom-full left-0 mb-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in-up z-10">
+              <div className="absolute bottom-full left-0 mb-2 bg-card border border-border rounded-xl shadow-lg overflow-hidden animate-fade-in-up z-10 min-w-[200px]">
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => { fileInputRef.current?.click(); }}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
                 >
                   <ImageIcon size={16} className="text-primary" />
                   <span>Attach Photo</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setImageMode(true);
+                    setShowAttachMenu(false);
+                    setTimeout(() => textareaRef.current?.focus(), 50);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap border-t border-border"
+                >
+                  <Mountain size={16} className="text-secondary" />
+                  <span>Image Create</span>
+                  <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-primary/15 text-primary font-bold">AI</span>
                 </button>
               </div>
             )}
