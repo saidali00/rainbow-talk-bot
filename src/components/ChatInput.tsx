@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Sparkles, Plus, Image, X } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 interface ChatInputProps {
   onSend: (message: string, image?: string) => void;
@@ -10,7 +11,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const [imageAnimating, setImageAnimating] = useState(false);
+  const [imageLoading, setImageLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,14 +51,25 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setImageLoading(true);
+    setShowAttachMenu(false);
     const reader = new FileReader();
     reader.onload = () => {
-      setImageAnimating(true);
-      setAttachedImage(reader.result as string);
-      setTimeout(() => setImageAnimating(false), 500);
+      // Simulate brief loading for nice UX
+      setTimeout(() => {
+        setAttachedImage(reader.result as string);
+        setImageLoading(false);
+        toast({
+          title: "✓ Image attached",
+          description: "Ask anything about this image.",
+        });
+      }, 500);
+    };
+    reader.onerror = () => {
+      setImageLoading(false);
+      toast({ title: "Failed to read image", variant: "destructive" });
     };
     reader.readAsDataURL(file);
-    setShowAttachMenu(false);
     e.target.value = "";
   };
 
@@ -67,11 +79,22 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
+      {/* Loading ring while reading file */}
+      {imageLoading && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
+          <Loader2 size={16} className="animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Attaching image...</span>
+        </div>
+      )}
+
       {/* Attached image preview */}
-      {attachedImage && (
-        <div className={`mb-2 inline-block relative ${imageAnimating ? "animate-fade-in-up" : ""}`}>
-          <div className="relative rounded-xl overflow-hidden border border-border shadow-md group">
+      {attachedImage && !imageLoading && (
+        <div className="mb-2 inline-block relative animate-scale-in">
+          <div className="relative rounded-xl overflow-hidden border-2 border-primary/40 shadow-md group">
             <img src={attachedImage} alt="Attached" className="max-h-32 max-w-48 object-cover rounded-xl" />
+            <div className="absolute top-1 left-1 bg-primary/90 text-primary-foreground rounded-full p-0.5">
+              <CheckCircle2 size={14} />
+            </div>
             <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/20 transition-colors" />
             <button
               onClick={removeImage}
@@ -107,7 +130,7 @@ const ChatInput = ({ onSend, disabled }: ChatInputProps) => {
                   onClick={() => fileInputRef.current?.click()}
                   className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
                 >
-                  <Image size={16} className="text-primary" />
+                  <ImageIcon size={16} className="text-primary" />
                   <span>Attach Photo</span>
                 </button>
               </div>

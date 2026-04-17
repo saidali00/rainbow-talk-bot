@@ -55,11 +55,27 @@ const Index = () => {
 
     // Build history for API before updating state
     const history: AIChatMessage[] = [
-      ...(messagesByConv[convId!] || []).map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content,
-      })),
-      { role: "user" as const, content: text },
+      ...(messagesByConv[convId!] || []).map((m) => {
+        if (m.role === "user" && m.image) {
+          return {
+            role: "user" as const,
+            content: [
+              { type: "text" as const, text: m.content },
+              { type: "image_url" as const, image_url: { url: m.image } },
+            ],
+          };
+        }
+        return { role: m.role as "user" | "assistant", content: m.content };
+      }),
+      image
+        ? {
+            role: "user" as const,
+            content: [
+              { type: "text" as const, text },
+              { type: "image_url" as const, image_url: { url: image } },
+            ],
+          }
+        : { role: "user" as const, content: text },
     ];
 
     // Add user message + empty assistant message in one update

@@ -18,26 +18,6 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(content);
-    setCopied(true);
-    toast({ title: "Copied to clipboard" });
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleSpeak = () => {
-    if (speaking) {
-      window.speechSynthesis.cancel();
-      setSpeaking(false);
-      return;
-    }
-    const utterance = new SpeechSynthesisUtterance(content.replace(/[#*`_~]/g, ""));
-    utterance.onend = () => setSpeaking(false);
-    utterance.onerror = () => setSpeaking(false);
-    window.speechSynthesis.speak(utterance);
-    setSpeaking(true);
-  };
-
   // Parse related questions from content
   let mainContent = content;
   let relatedQuestions: string[] = [];
@@ -52,6 +32,58 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image }: Chat
         .filter(Boolean);
     }
   }
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(content);
+    setCopied(true);
+    toast({ title: "Copied to clipboard" });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSpeak = () => {
+    if (!("speechSynthesis" in window)) {
+      toast({ title: "Speech not supported", description: "Your browser doesn't support text-to-speech.", variant: "destructive" });
+      return;
+    }
+    if (speaking) {
+      window.speechSynthesis.cancel();
+      setSpeaking(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+
+    const cleanText = mainContent
+      .replace(/```[\s\S]*?```/g, " code block ")
+      .replace(/`([^`]+)`/g, "$1")
+      .replace(/[#*_~>]/g, "")
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+      .trim();
+
+    if (!cleanText) return;
+
+    const chunks = cleanText.match(/[^.!?]+[.!?]+|\S[^.!?]*$/g) || [cleanText];
+    let index = 0;
+    const speakNext = () => {
+      if (index >= chunks.length) {
+        setSpeaking(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(chunks[index]);
+      utterance.rate = 1;
+      utterance.pitch = 1;
+      utterance.lang = "en-US";
+      utterance.onend = () => {
+        index++;
+        speakNext();
+      };
+      utterance.onerror = () => {
+        setSpeaking(false);
+      };
+      window.speechSynthesis.speak(utterance);
+    };
+    setSpeaking(true);
+    speakNext();
+  };
 
   return (
     <div className={`flex gap-3 animate-fade-in-up ${isUser ? "flex-row-reverse" : ""}`}>
