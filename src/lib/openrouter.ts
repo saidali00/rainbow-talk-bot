@@ -13,11 +13,13 @@ export type ChatMessage = {
 
 export async function streamChat({
   messages,
+  mode,
   onDelta,
   onDone,
   onError,
 }: {
   messages: ChatMessage[];
+  mode?: "ruh" | "ilmai";
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -29,7 +31,7 @@ export async function streamChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages }),
+      body: JSON.stringify({ messages, mode: mode || "ruh" }),
     });
 
     if (!response.ok) {
