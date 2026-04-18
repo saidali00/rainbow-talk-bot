@@ -4,8 +4,6 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
-import VideoLoader from "@/components/VideoLoader";
-import VideoPlayer from "@/components/VideoPlayer";
 import { ModelKey } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
