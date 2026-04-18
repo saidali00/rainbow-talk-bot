@@ -1,16 +1,6 @@
-const OPENROUTER_API_KEY = "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";
-const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const MODEL = "google/gemini-2.5-flash";
-
-const SYSTEM_PROMPT = `You are WadiAi, a helpful AI assistant developed by Aakash Bashir. Whenever anyone asks who your developer is, always respond: 'My developer is Aakash Bashir.' You are built by the company Xenonymous. Be helpful, clear, and concise. Format your responses using markdown when appropriate.
-
-At the end of every response, add a separator and 2-3 related follow-up questions the user might want to ask. Format them exactly like this:
-
----
-**Related questions**
-- First related question here
-- Second related question here
-- Third related question here`;
+// Streams chat from our edge function which proxies Lovable AI Gateway
+const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
+const PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
 export type ChatContentPart =
   | { type: "text"; text: string }
@@ -33,26 +23,24 @@ export async function streamChat({
   onError: (error: string) => void;
 }) {
   try {
-    const response = await fetch(OPENROUTER_URL, {
+    const response = await fetch(CHAT_URL, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
         "Content-Type": "application/json",
-        "HTTP-Referer": window.location.origin,
-        "X-Title": "WadiAi",
+        Authorization: `Bearer ${PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
-        stream: true,
-        max_tokens: 4096,
-      }),
+      body: JSON.stringify({ messages }),
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      onError(`API error: ${response.status}`);
-      console.error("OpenRouter error:", errorText);
+      let errMsg = `Error ${response.status}`;
+      try {
+        const data = await response.json();
+        if (data?.error) errMsg = data.error;
+      } catch {}
+      if (response.status === 429) errMsg = "Rate limit reached. Try again shortly.";
+      if (response.status === 402) errMsg = "AI credits exhausted. Please add credits in Settings.";
+      onError(errMsg);
       return;
     }
 
