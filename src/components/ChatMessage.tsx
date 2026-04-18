@@ -7,6 +7,9 @@ import { toast } from "@/hooks/use-toast";
 import MountainLoader from "./MountainLoader";
 import VideoLoader from "./VideoLoader";
 import VideoPlayer from "./VideoPlayer";
+import RuhLoader from "./RuhLoader";
+import IlmLoader from "./IlmLoader";
+import { ModelKey } from "./ModelPicker";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -20,12 +23,14 @@ interface ChatMessageProps {
   videoFrames?: string[];
   generatingVideo?: boolean;
   videoPrompt?: string;
+  chatMode?: ModelKey;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt, videoFrames, generatingVideo, videoPrompt }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt, videoFrames, generatingVideo, videoPrompt, chatMode }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const showThinkLoader = !isUser && isStreaming && !content && !generatingImage && !generatingVideo;
 
   // Parse related questions from content
   let mainContent = content;
@@ -139,6 +144,10 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
         {videoFrames && videoFrames.length > 0 && !generatingVideo && (
           <VideoPlayer frames={videoFrames} prompt={videoPrompt || "Video"} />
         )}
+
+        {/* Unique thinking loader per chat model */}
+        {showThinkLoader && chatMode === "ilmai" && <IlmLoader prompt={"Preparing your study answer..."} />}
+        {showThinkLoader && chatMode !== "ilmai" && <RuhLoader />}
 
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">

@@ -21,6 +21,7 @@ interface Message {
   videoFrames?: string[];
   generatingVideo?: boolean;
   videoPrompt?: string;
+  chatMode?: ModelKey;
 }
 
 const Index = () => {
@@ -93,7 +94,7 @@ const Index = () => {
       [convId!]: [
         ...(prev[convId!] || []),
         userMsg,
-        { id: assistantId, role: "assistant", content: "" },
+        { id: assistantId, role: "assistant", content: "", chatMode: model === "ilmai" ? "ilmai" : "ruh" },
       ],
     }));
 
@@ -102,6 +103,7 @@ const Index = () => {
 
     await streamChat({
       messages: history,
+      mode: model === "ilmai" ? "ilmai" : "ruh",
       onDelta: (chunk) => {
         fullContent += chunk;
         const current = fullContent;
@@ -122,7 +124,7 @@ const Index = () => {
     });
   };
 
-  const handleGenerateImage = async (prompt: string) => {
+  const handleGenerateImage = async (prompt: string, images?: string[]) => {
     let convId = activeConvId;
     if (!convId) convId = createConversation(`🎨 ${prompt}`);
 
@@ -141,7 +143,7 @@ const Index = () => {
     setIsStreaming(true);
     try {
       const { data, error } = await supabase.functions.invoke("generate-image", {
-        body: { prompt },
+        body: { prompt, images: images || [] },
       });
 
       if (error) throw error;
@@ -278,6 +280,7 @@ const Index = () => {
                     videoFrames={msg.videoFrames}
                     generatingVideo={msg.generatingVideo}
                     videoPrompt={msg.videoPrompt}
+                    chatMode={msg.chatMode}
                     isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage && !msg.generatingVideo && !msg.videoFrames}
                     onRelatedClick={handleSend}
                   />
