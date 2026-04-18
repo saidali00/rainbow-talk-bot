@@ -4,6 +4,7 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
+import { ModelKey } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,9 @@ interface Message {
   generatedImage?: string;
   generatingImage?: boolean;
   imagePrompt?: string;
+  videoFrames?: string[];
+  generatingVideo?: boolean;
+  videoPrompt?: string;
 }
 
 const Index = () => {
@@ -26,6 +30,7 @@ const Index = () => {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messagesByConv, setMessagesByConv] = useState<Record<string, Message[]>>({});
   const [isStreaming, setIsStreaming] = useState(false);
+  const [model, setModel] = useState<ModelKey>("ruh");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeMessages = activeConvId ? messagesByConv[activeConvId] || [] : [];
@@ -172,6 +177,53 @@ const Index = () => {
     }
   };
 
+  const handleGenerateVideo = async (prompt: string) => {
+    let convId = activeConvId;
+    if (!convId) convId = createConversation(`🎬 ${prompt}`);
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: `🎬 Video: ${prompt}` };
+    const assistantId = crypto.randomUUID();
+
+    setMessagesByConv((prev) => ({
+      ...prev,
+      [convId!]: [
+        ...(prev[convId!] || []),
+        userMsg,
+        { id: assistantId, role: "assistant", content: "", generatingVideo: true, videoPrompt: prompt },
+      ],
+    }));
+
+    setIsStreaming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-video", { body: { prompt } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.frames?.length) throw new Error("No video frames returned");
+
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? { ...m, generatingVideo: false, videoFrames: data.frames, content: `Here's your 10s video: "${prompt}"` }
+            : m
+        ),
+      }));
+      toast({ title: "🎬 Video ready!", description: "ManzarX rendered your scene." });
+    } catch (e: any) {
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? { ...m, generatingVideo: false, content: `Sorry, video generation failed. ${e?.message || ""}` }
+            : m
+        ),
+      }));
+      toast({ title: "Video generation failed", description: e?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
+
   const handleNewChat = () => {
     setActiveConvId(null);
   };
@@ -207,7 +259,7 @@ const Index = () => {
           <>
             <WelcomeScreen onSuggestionClick={handleSend} />
             <div className="pb-6">
-              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} onGenerateVideo={handleGenerateVideo} disabled={isStreaming} model={model} onModelChange={setModel} />
             </div>
           </>
         ) : (
@@ -223,7 +275,10 @@ const Index = () => {
                     generatedImage={msg.generatedImage}
                     generatingImage={msg.generatingImage}
                     imagePrompt={msg.imagePrompt}
-                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage}
+                    videoFrames={msg.videoFrames}
+                    generatingVideo={msg.generatingVideo}
+                    videoPrompt={msg.videoPrompt}
+                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage && !msg.generatingVideo && !msg.videoFrames}
                     onRelatedClick={handleSend}
                   />
                 ))}
@@ -231,7 +286,7 @@ const Index = () => {
               </div>
             </div>
             <div className="pb-6 pt-2">
-              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} onGenerateVideo={handleGenerateVideo} disabled={isStreaming} model={model} onModelChange={setModel} />
             </div>
           </>
         )}

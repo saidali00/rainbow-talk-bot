@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain, Brain, Film } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import ModelPicker, { ModelKey, MODELS } from "./ModelPicker";
 
 interface ChatInputProps {
   onSend: (message: string, image?: string) => void;
   onGenerateImage?: (prompt: string) => void;
+  onGenerateVideo?: (prompt: string) => void;
   disabled?: boolean;
+  model: ModelKey;
+  onModelChange: (m: ModelKey) => void;
 }
 
-const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
+const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, onModelChange }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
@@ -27,6 +31,19 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
   const handleSubmit = () => {
     const trimmed = value.trim();
     if ((!trimmed && !attachedImage) || disabled) return;
+
+    // Route based on selected model
+    if (model === "tasveerai" && trimmed && onGenerateImage) {
+      onGenerateImage(trimmed);
+      setValue("");
+      return;
+    }
+    if (model === "manzarx" && trimmed && onGenerateVideo) {
+      onGenerateVideo(trimmed);
+      setValue("");
+      return;
+    }
+    // Legacy image-mode toggle still works
     if (imageMode && trimmed && onGenerateImage) {
       onGenerateImage(trimmed);
       setValue("");
@@ -87,6 +104,15 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
+      {/* Model picker */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <ModelPicker value={model} onChange={onModelChange} />
+        <span className="text-[10px] text-muted-foreground hidden sm:inline">
+          {model === "ruh" && "Thinks deeply • streams answer"}
+          {model === "tasveerai" && "Creates an image from your prompt"}
+          {model === "manzarx" && "Generates a 10s animated video"}
+        </span>
+      </div>
       {/* Loading ring while reading file */}
       {imageLoading && (
         <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
@@ -176,36 +202,49 @@ const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
             className="hidden"
           />
 
-          <div className={`p-2 ${imageMode ? "text-primary" : "text-secondary"}`}>
-            {imageMode ? <Mountain size={18} /> : <Sparkles size={18} />}
-          </div>
-          <textarea
-            ref={textareaRef}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder={imageMode ? "Describe an image to create..." : "Ask WadiAi anything..."}
-            disabled={disabled}
-            rows={1}
-            className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
-          />
-          <button
-            onClick={handleVoice}
-            disabled={disabled}
-            className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-            title="Voice input"
-          >
-            <Mic size={16} />
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={disabled || (!value.trim() && !attachedImage)}
-            className={`p-2.5 rounded-xl text-primary-foreground disabled:opacity-30 hover:opacity-90 transition-all ${
-              imageMode ? "bg-gradient-to-br from-primary via-secondary to-accent" : "bg-primary"
-            }`}
-          >
-            {imageMode ? <Mountain size={16} /> : <Send size={16} />}
-          </button>
+          {(() => {
+            const m = MODELS.find((x) => x.key === model)!;
+            const MIcon = m.icon;
+            const placeholder =
+              model === "tasveerai"
+                ? "Describe an image for TasveerAI to paint..."
+                : model === "manzarx"
+                ? "Describe a 10s scene for ManzarX..."
+                : "Ask Ruh anything (deep thinking)...";
+            return (
+              <>
+                <div className={`p-2 text-transparent bg-clip-text bg-gradient-to-br ${m.gradient}`}>
+                  <MIcon size={18} className="text-foreground/80" />
+                </div>
+                <textarea
+                  ref={textareaRef}
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder={placeholder}
+                  disabled={disabled}
+                  rows={1}
+                  className="flex-1 resize-none bg-transparent text-foreground placeholder:text-muted-foreground text-sm py-2 focus:outline-none max-h-40"
+                />
+                <button
+                  onClick={handleVoice}
+                  disabled={disabled}
+                  className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
+                  title="Voice input"
+                >
+                  <Mic size={16} />
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  disabled={disabled || (!value.trim() && !attachedImage)}
+                  className={`p-2.5 rounded-xl text-white disabled:opacity-30 hover:opacity-90 transition-all bg-gradient-to-br ${m.gradient} shadow-md`}
+                  title={`Send to ${m.name}`}
+                >
+                  {model === "tasveerai" ? <ImageIcon size={16} /> : model === "manzarx" ? <Film size={16} /> : <Send size={16} />}
+                </button>
+              </>
+            );
+          })()}
         </div>
       </div>
       <p className="text-center text-xs text-muted-foreground mt-2">

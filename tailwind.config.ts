@@ -107,6 +107,11 @@ export default {
           "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
           "50%": { opacity: "1", transform: "scale(1.1)" },
         },
+        "scan": {
+          "0%": { top: "0%" },
+          "50%": { top: "100%" },
+          "100%": { top: "0%" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
