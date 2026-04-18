@@ -7,6 +7,9 @@ import { toast } from "@/hooks/use-toast";
 import MountainLoader from "./MountainLoader";
 import VideoLoader from "./VideoLoader";
 import VideoPlayer from "./VideoPlayer";
+import RuhLoader from "./RuhLoader";
+import IlmLoader from "./IlmLoader";
+import { ModelKey } from "./ModelPicker";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
