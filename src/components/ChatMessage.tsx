@@ -132,6 +132,14 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
           </div>
         )}
 
+        {/* Generating video - ManzarX loader */}
+        {generatingVideo && <VideoLoader prompt={videoPrompt || "Rendering video..."} />}
+
+        {/* Generated video result */}
+        {videoFrames && videoFrames.length > 0 && !generatingVideo && (
+          <VideoPlayer frames={videoFrames} prompt={videoPrompt || "Video"} />
+        )}
+
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
             <p>{content}</p>

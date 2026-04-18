@@ -277,7 +277,10 @@ const Index = () => {
                     generatedImage={msg.generatedImage}
                     generatingImage={msg.generatingImage}
                     imagePrompt={msg.imagePrompt}
-                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage}
+                    videoFrames={msg.videoFrames}
+                    generatingVideo={msg.generatingVideo}
+                    videoPrompt={msg.videoPrompt}
+                    isStreaming={isStreaming && i === activeMessages.length - 1 && msg.role === "assistant" && !msg.generatingImage && !msg.generatedImage && !msg.generatingVideo && !msg.videoFrames}
                     onRelatedClick={handleSend}
                   />
                 ))}
