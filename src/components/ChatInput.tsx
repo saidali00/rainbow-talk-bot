@@ -1,14 +1,18 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain } from "lucide-react";
+import { Send, Mic, Sparkles, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Mountain, Brain, Film } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import ModelPicker, { ModelKey, MODELS } from "./ModelPicker";
 
 interface ChatInputProps {
   onSend: (message: string, image?: string) => void;
   onGenerateImage?: (prompt: string) => void;
+  onGenerateVideo?: (prompt: string) => void;
   disabled?: boolean;
+  model: ModelKey;
+  onModelChange: (m: ModelKey) => void;
 }
 
-const ChatInput = ({ onSend, onGenerateImage, disabled }: ChatInputProps) => {
+const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, onModelChange }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [showAttachMenu, setShowAttachMenu] = useState(false);
