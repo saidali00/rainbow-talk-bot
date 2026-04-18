@@ -4,6 +4,9 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
+import VideoLoader from "@/components/VideoLoader";
+import VideoPlayer from "@/components/VideoPlayer";
+import { ModelKey } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +20,9 @@ interface Message {
   generatedImage?: string;
   generatingImage?: boolean;
   imagePrompt?: string;
+  videoFrames?: string[];
+  generatingVideo?: boolean;
+  videoPrompt?: string;
 }
 
 const Index = () => {
@@ -26,6 +32,7 @@ const Index = () => {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messagesByConv, setMessagesByConv] = useState<Record<string, Message[]>>({});
   const [isStreaming, setIsStreaming] = useState(false);
+  const [model, setModel] = useState<ModelKey>("ruh");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeMessages = activeConvId ? messagesByConv[activeConvId] || [] : [];
