@@ -1,4 +1,4 @@
-const OPENROUTER_API_KEY = "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";
+const OPENROUTER_API_KEY = "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";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
 const MODEL = "google/gemini-2.5-flash";
 
