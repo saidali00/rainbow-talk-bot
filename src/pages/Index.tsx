@@ -261,7 +261,7 @@ const Index = () => {
           <>
             <WelcomeScreen onSuggestionClick={handleSend} />
             <div className="pb-6">
-              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} onGenerateVideo={handleGenerateVideo} disabled={isStreaming} model={model} onModelChange={setModel} />
             </div>
           </>
         ) : (
@@ -285,7 +285,7 @@ const Index = () => {
               </div>
             </div>
             <div className="pb-6 pt-2">
-              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} disabled={isStreaming} />
+              <ChatInput onSend={handleSend} onGenerateImage={handleGenerateImage} onGenerateVideo={handleGenerateVideo} disabled={isStreaming} model={model} onModelChange={setModel} />
             </div>
           </>
         )}
