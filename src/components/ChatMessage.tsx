@@ -5,6 +5,8 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Bot, User, Copy, Check, Volume2, VolumeX, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import MountainLoader from "./MountainLoader";
+import VideoLoader from "./VideoLoader";
+import VideoPlayer from "./VideoPlayer";
 
 interface ChatMessageProps {
   role: "user" | "assistant";
@@ -15,9 +17,12 @@ interface ChatMessageProps {
   generatedImage?: string;
   generatingImage?: boolean;
   imagePrompt?: string;
+  videoFrames?: string[];
+  generatingVideo?: boolean;
+  videoPrompt?: string;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt, videoFrames, generatingVideo, videoPrompt }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
