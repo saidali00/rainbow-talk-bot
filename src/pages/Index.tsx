@@ -179,7 +179,52 @@ const Index = () => {
     }
   };
 
-  const handleNewChat = () => {
+  const handleGenerateVideo = async (prompt: string) => {
+    let convId = activeConvId;
+    if (!convId) convId = createConversation(`🎬 ${prompt}`);
+
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: `🎬 Video: ${prompt}` };
+    const assistantId = crypto.randomUUID();
+
+    setMessagesByConv((prev) => ({
+      ...prev,
+      [convId!]: [
+        ...(prev[convId!] || []),
+        userMsg,
+        { id: assistantId, role: "assistant", content: "", generatingVideo: true, videoPrompt: prompt },
+      ],
+    }));
+
+    setIsStreaming(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-video", { body: { prompt } });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      if (!data?.frames?.length) throw new Error("No video frames returned");
+
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? { ...m, generatingVideo: false, videoFrames: data.frames, content: `Here's your 10s video: "${prompt}"` }
+            : m
+        ),
+      }));
+      toast({ title: "🎬 Video ready!", description: "ManzarX rendered your scene." });
+    } catch (e: any) {
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: prev[convId!].map((m) =>
+          m.id === assistantId
+            ? { ...m, generatingVideo: false, content: `Sorry, video generation failed. ${e?.message || ""}` }
+            : m
+        ),
+      }));
+      toast({ title: "Video generation failed", description: e?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setIsStreaming(false);
+    }
+  };
     setActiveConvId(null);
   };
 
