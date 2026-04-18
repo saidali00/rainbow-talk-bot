@@ -31,6 +31,19 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
   const handleSubmit = () => {
     const trimmed = value.trim();
     if ((!trimmed && !attachedImage) || disabled) return;
+
+    // Route based on selected model
+    if (model === "tasveerai" && trimmed && onGenerateImage) {
+      onGenerateImage(trimmed);
+      setValue("");
+      return;
+    }
+    if (model === "manzarx" && trimmed && onGenerateVideo) {
+      onGenerateVideo(trimmed);
+      setValue("");
+      return;
+    }
+    // Legacy image-mode toggle still works
     if (imageMode && trimmed && onGenerateImage) {
       onGenerateImage(trimmed);
       setValue("");
