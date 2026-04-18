@@ -104,6 +104,15 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
+      {/* Model picker */}
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <ModelPicker value={model} onChange={onModelChange} />
+        <span className="text-[10px] text-muted-foreground hidden sm:inline">
+          {model === "ruh" && "Thinks deeply • streams answer"}
+          {model === "tasveerai" && "Creates an image from your prompt"}
+          {model === "manzarx" && "Generates a 10s animated video"}
+        </span>
+      </div>
       {/* Loading ring while reading file */}
       {imageLoading && (
         <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
