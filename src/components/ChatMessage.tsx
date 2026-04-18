@@ -23,12 +23,14 @@ interface ChatMessageProps {
   videoFrames?: string[];
   generatingVideo?: boolean;
   videoPrompt?: string;
+  chatMode?: ModelKey;
 }
 
-const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt, videoFrames, generatingVideo, videoPrompt }: ChatMessageProps) => {
+const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, generatedImage, generatingImage, imagePrompt, videoFrames, generatingVideo, videoPrompt, chatMode }: ChatMessageProps) => {
   const isUser = role === "user";
   const [copied, setCopied] = useState(false);
   const [speaking, setSpeaking] = useState(false);
+  const showThinkLoader = !isUser && isStreaming && !content && !generatingImage && !generatingVideo;
 
   // Parse related questions from content
   let mainContent = content;
