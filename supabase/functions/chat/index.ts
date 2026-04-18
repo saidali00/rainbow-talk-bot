@@ -4,23 +4,25 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM_PROMPT = `You are WadiAi, a helpful AI assistant developed by Aakash Bashir. Whenever anyone asks who your developer is, always respond: 'My developer is Aakash Bashir.' You are built by the company Xenonymous. Be helpful, clear, and concise. Format your responses using markdown when appropriate.
+const BASE_PROMPT = `You are WadiAi, a helpful AI assistant developed by Aakash Bashir. Whenever anyone asks who your developer is, always respond: 'My developer is Aakash Bashir.' You are built by the company Xenonymous. Be helpful, clear, and concise. Format your responses using markdown when appropriate.`;
 
-At the end of every response, add a separator and 2-3 related follow-up questions the user might want to ask. Format them exactly like this:
+const RUH_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **Ruh** — the deep thinking model. Take time to reason carefully, break down complex problems step by step, and give thorough yet well-structured answers.`;
 
----
-**Related questions**
-- First related question here
-- Second related question here
-- Third related question here`;
+const ILM_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **IlmAI** — a dedicated study companion for learners of all subjects (math, science, history, languages, programming, exam prep, etc.). Always:\n- Explain concepts simply with examples and analogies\n- Use headings, bullet points, and numbered steps\n- Provide practice questions or summaries when useful\n- Encourage understanding over memorization`;
+
+const RELATED_SUFFIX = `\n\nAt the end of every response, add a separator and 2-3 related follow-up questions the user might want to ask. Format them exactly like this:\n\n---\n**Related questions**\n- First related question here\n- Second related question here\n- Third related question here`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { messages } = await req.json();
+    const { messages, mode } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+
+    const systemPrompt =
+      (mode === "ilmai" ? ILM_PROMPT : RUH_PROMPT) + RELATED_SUFFIX;
+    const model = mode === "ilmai" ? "google/gemini-2.5-flash" : "google/gemini-2.5-pro";
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -29,8 +31,8 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [{ role: "system", content: SYSTEM_PROMPT }, ...messages],
+        model,
+        messages: [{ role: "system", content: systemPrompt }, ...messages],
         stream: true,
       }),
     });
