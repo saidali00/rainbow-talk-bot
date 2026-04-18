@@ -145,6 +145,10 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
           <VideoPlayer frames={videoFrames} prompt={videoPrompt || "Video"} />
         )}
 
+        {/* Unique thinking loader per chat model */}
+        {showThinkLoader && chatMode === "ilmai" && <IlmLoader prompt={"Preparing your study answer..."} />}
+        {showThinkLoader && chatMode !== "ilmai" && <RuhLoader />}
+
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
             <p>{content}</p>
