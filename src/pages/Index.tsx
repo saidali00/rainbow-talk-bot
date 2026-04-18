@@ -225,6 +225,8 @@ const Index = () => {
       setIsStreaming(false);
     }
   };
+
+  const handleNewChat = () => {
     setActiveConvId(null);
   };
 
