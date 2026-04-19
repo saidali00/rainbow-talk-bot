@@ -25,9 +25,18 @@ function pickLovableModel(mode: string) {
   return "google/gemini-2.5-flash"; // wadix + ilmai
 }
 
-function pickOpenRouterModel(mode: string) {
-  if (mode === "ruh") return "google/gemini-2.5-pro";
-  return "google/gemini-2.5-flash";
+function pickOpenRouterModels(mode: string): string[] {
+  // Free-tier model chain — first one tried, fall back if 404/429
+  if (mode === "ruh") {
+    return [
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "meta-llama/llama-3.2-3b-instruct:free",
+    ];
+  }
+  return [
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+  ];
 }
 
 Deno.serve(async (req) => {
@@ -76,39 +85,46 @@ Deno.serve(async (req) => {
       );
     }
 
-    const orResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "https://wadiai.lovable.app",
-        "X-Title": "WadiAi",
-      },
-      body: JSON.stringify({
-        model: pickOpenRouterModel(m),
-        messages: fullMessages,
-        stream: true,
-      }),
-    });
+    const orModels = pickOpenRouterModels(m);
+    let lastErr: { status: number; text: string } | null = null;
 
-    if (!orResp.ok) {
-      const t = await orResp.text().catch(() => "");
-      console.error("OpenRouter error:", orResp.status, t);
-      const status = orResp.status === 429 ? 429 : orResp.status === 402 ? 402 : 500;
-      const message =
-        status === 429
-          ? "Rate limit reached. Try again shortly."
-          : status === 402
-          ? "AI credits exhausted on both providers."
-          : "AI provider error. Please try again.";
-      return new Response(JSON.stringify({ error: message }), {
-        status,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    for (const orModel of orModels) {
+      const orResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://wadiai.lovable.app",
+          "X-Title": "WadiAi",
+        },
+        body: JSON.stringify({
+          model: orModel,
+          messages: fullMessages,
+          stream: true,
+        }),
       });
+
+      if (orResp.ok) {
+        return new Response(orResp.body, {
+          headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+        });
+      }
+
+      const t = await orResp.text().catch(() => "");
+      console.warn(`OpenRouter ${orModel} failed:`, orResp.status, t);
+      lastErr = { status: orResp.status, text: t };
+      // Try next model on 404/429/503; bail on auth errors
+      if (orResp.status === 401 || orResp.status === 403) break;
     }
 
-    return new Response(orResp.body, {
-      headers: { ...corsHeaders, "Content-Type": "text/event-stream" },
+    const status = lastErr?.status === 429 ? 429 : 500;
+    const message =
+      status === 429
+        ? "All providers rate-limited. Please try again in a moment."
+        : "AI provider error. Please try again.";
+    return new Response(JSON.stringify({ error: message }), {
+      status,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (e) {
     console.error("chat error:", e);
