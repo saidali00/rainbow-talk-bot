@@ -26,17 +26,21 @@ function pickLovableModel(mode: string) {
 }
 
 function pickOpenRouterModels(mode: string): string[] {
-  // Free-tier model chain — first one tried, fall back if 404/429
+  // Free-tier model chain — first tried, fall back if 404/429/upstream-busy
+  const base = [
+    "z-ai/glm-4.5-air:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "meta-llama/llama-3.2-3b-instruct:free",
+    "openai/gpt-oss-20b:free",
+  ];
   if (mode === "ruh") {
     return [
       "meta-llama/llama-3.3-70b-instruct:free",
+      "z-ai/glm-4.5-air:free",
       "meta-llama/llama-3.2-3b-instruct:free",
     ];
   }
-  return [
-    "meta-llama/llama-3.2-3b-instruct:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-  ];
+  return base;
 }
 
 Deno.serve(async (req) => {
