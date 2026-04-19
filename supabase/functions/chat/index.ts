@@ -101,6 +101,7 @@ Deno.serve(async (req) => {
           model: orModel,
           messages: fullMessages,
           stream: true,
+          max_tokens: 2048,
         }),
       });
 
