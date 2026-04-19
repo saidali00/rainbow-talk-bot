@@ -26,8 +26,8 @@ function pickLovableModel(mode: string) {
 }
 
 function pickOpenRouterModel(mode: string) {
-  if (mode === "ruh") return "google/gemini-2.5-flash"; // free + capable fallback
-  return "google/gemini-2.0-flash-exp:free";
+  if (mode === "ruh") return "google/gemini-2.5-pro";
+  return "google/gemini-2.5-flash";
 }
 
 Deno.serve(async (req) => {
