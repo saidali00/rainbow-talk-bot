@@ -144,7 +144,9 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
     ? "Describe a 10s scene for ManzarX..."
     : model === "ilmai"
     ? "Ask IlmAI any study question..."
-    : "Ask Ruh anything (deep thinking)...";
+    : model === "ruh"
+    ? "Ask Ruh anything (deep thinking)..."
+    : "Ask WadiX anything — fast & friendly...";
 
   return (
     <div className="w-full max-w-3xl mx-auto px-4">
@@ -152,6 +154,7 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
       <div className="mb-2 flex items-center justify-between gap-2">
         <ModelPicker value={model} onChange={onModelChange} />
         <span className="text-[10px] text-muted-foreground hidden sm:inline">
+          {model === "wadix" && "Fast • friendly • default"}
           {model === "ruh" && "Thinks deeply • streams answer"}
           {model === "ilmai" && "Study companion • clear explanations"}
           {model === "tasveerai" && "Nano Banana • image create or edit"}

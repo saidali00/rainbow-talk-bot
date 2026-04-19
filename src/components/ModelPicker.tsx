@@ -1,8 +1,10 @@
-import { Brain, Image as ImageIcon, Film, Check, BookOpen, Wrench } from "lucide-react";
+import { Brain, Image as ImageIcon, Film, Check, BookOpen, Wrench, Zap } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 
-export type ModelKey = "ruh" | "tasveerai" | "manzarx" | "ilmai";
+export type ModelKey = "wadix" | "ruh" | "tasveerai" | "manzarx" | "ilmai";
+
+export const DEFAULT_MODEL: ModelKey = "wadix";
 
 export const MODELS: {
   key: ModelKey;
@@ -12,6 +14,14 @@ export const MODELS: {
   gradient: string;
   ring: string;
 }[] = [
+  {
+    key: "wadix",
+    name: "WadiX",
+    tagline: "Fast & friendly • default",
+    icon: Zap,
+    gradient: "from-emerald-400 via-lime-400 to-amber-400",
+    ring: "ring-emerald-400/50",
+  },
   {
     key: "ruh",
     name: "Ruh",
@@ -123,9 +133,14 @@ const ModelPicker = ({ value, onChange }: ModelPickerProps) => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
                     {m.name}
-                    {selected && (
-                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">
+                    {m.key === "wadix" && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
                         DEFAULT
+                      </span>
+                    )}
+                    {selected && m.key !== "wadix" && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary">
+                        ACTIVE
                       </span>
                     )}
                   </p>
