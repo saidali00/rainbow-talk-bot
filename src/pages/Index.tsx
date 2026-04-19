@@ -4,7 +4,7 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
-import { ModelKey } from "@/components/ModelPicker";
+import { ModelKey, DEFAULT_MODEL } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
 import { supabase } from "@/integrations/supabase/client";
@@ -31,7 +31,7 @@ const Index = () => {
   const [activeConvId, setActiveConvId] = useState<string | null>(null);
   const [messagesByConv, setMessagesByConv] = useState<Record<string, Message[]>>({});
   const [isStreaming, setIsStreaming] = useState(false);
-  const [model, setModel] = useState<ModelKey>("ruh");
+  const [model, setModel] = useState<ModelKey>(DEFAULT_MODEL);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeMessages = activeConvId ? messagesByConv[activeConvId] || [] : [];
@@ -94,16 +94,19 @@ const Index = () => {
       [convId!]: [
         ...(prev[convId!] || []),
         userMsg,
-        { id: assistantId, role: "assistant", content: "", chatMode: model === "ilmai" ? "ilmai" : "ruh" },
+        { id: assistantId, role: "assistant", content: "", chatMode: model },
       ],
     }));
 
     setIsStreaming(true);
     let fullContent = "";
 
+    const chatMode: "wadix" | "ruh" | "ilmai" =
+      model === "ilmai" ? "ilmai" : model === "ruh" ? "ruh" : "wadix";
+
     await streamChat({
       messages: history,
-      mode: model === "ilmai" ? "ilmai" : "ruh",
+      mode: chatMode,
       onDelta: (chunk) => {
         fullContent += chunk;
         const current = fullContent;
