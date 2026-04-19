@@ -33,9 +33,9 @@ Deno.serve(async (req) => {
       systemPrompt = RUH_PROMPT;
       model = "google/gemini-2.5-pro";
     } else {
-      // wadix (default) — fastest & friendliest
+      // wadix (default) — fast & friendly
       systemPrompt = WADIX_PROMPT;
-      model = "google/gemini-2.5-flash-lite";
+      model = "google/gemini-2.5-flash";
     }
     systemPrompt += RELATED_SUFFIX;
 

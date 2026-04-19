@@ -9,6 +9,7 @@ import VideoLoader from "./VideoLoader";
 import VideoPlayer from "./VideoPlayer";
 import RuhLoader from "./RuhLoader";
 import IlmLoader from "./IlmLoader";
+import WadiTypingLoader from "./WadiTypingLoader";
 import { ModelKey } from "./ModelPicker";
 
 interface ChatMessageProps {
@@ -147,7 +148,8 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
 
         {/* Unique thinking loader per chat model */}
         {showThinkLoader && chatMode === "ilmai" && <IlmLoader prompt={"Preparing your study answer..."} />}
-        {showThinkLoader && chatMode !== "ilmai" && <RuhLoader />}
+        {showThinkLoader && chatMode === "ruh" && <RuhLoader />}
+        {showThinkLoader && (chatMode === "wadix" || !chatMode) && <WadiTypingLoader />}
 
         {isUser ? (
           <div className="rounded-2xl px-4 py-3 text-sm leading-relaxed bg-chat-user text-chat-user-foreground rounded-tr-md">
