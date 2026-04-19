@@ -19,7 +19,7 @@ export async function streamChat({
   onError,
 }: {
   messages: ChatMessage[];
-  mode?: "ruh" | "ilmai";
+  mode?: "wadix" | "ruh" | "ilmai";
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;
@@ -31,7 +31,7 @@ export async function streamChat({
         "Content-Type": "application/json",
         Authorization: `Bearer ${PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ messages, mode: mode || "ruh" }),
+      body: JSON.stringify({ messages, mode: mode || "wadix" }),
     });
 
     if (!response.ok) {

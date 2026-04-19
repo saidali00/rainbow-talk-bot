@@ -4,7 +4,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Bot, User, Copy, Check, Volume2, VolumeX, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import MountainLoader from "./MountainLoader";
+import TasveerLoader from "./TasveerLoader";
 import VideoLoader from "./VideoLoader";
 import VideoPlayer from "./VideoPlayer";
 import RuhLoader from "./RuhLoader";
@@ -119,8 +119,8 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
           </div>
         )}
 
-        {/* Generating image - mountain skeleton loader */}
-        {generatingImage && <MountainLoader prompt={imagePrompt || "Creating image..."} />}
+        {/* Generating image - colorful TasveerAI loader */}
+        {generatingImage && <TasveerLoader prompt={imagePrompt || "Creating image..."} />}
 
         {/* Generated image result */}
         {generatedImage && !generatingImage && (

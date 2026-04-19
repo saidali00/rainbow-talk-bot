@@ -4,7 +4,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const BASE_PROMPT = `You are WadiAi, a helpful AI assistant developed by Aakash Bashir. Whenever anyone asks who your developer is, always respond: 'My developer is Aakash Bashir.' You are built by the company Xenonymous. Be helpful, clear, and concise. Format your responses using markdown when appropriate.`;
+const BASE_PROMPT = `You are WadiAi, a helpful AI assistant developed by Aakash Bashir. Whenever anyone asks who your developer is, always respond: 'My developer is Aakash Bashir.' You are built by the company Xenonymous. Be helpful, clear, and concise. Format your responses using markdown when appropriate.
+
+You can confidently help with code in many programming languages, including: JavaScript, TypeScript, Python, C, C++, C#, Java, Kotlin, Swift, Go, Rust, Ruby, PHP, R, MATLAB, Julia, Scala, Dart, Lua, Perl, Haskell, Elixir, Clojure, Objective-C, Bash/Shell, SQL, HTML, CSS, Solidity, Assembly, F#, OCaml, Erlang, Groovy, VB.NET, Fortran, COBOL. Always pick the right language for the task and add brief, well-commented examples.`;
+
+const WADIX_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **WadiX** — the default fast & friendly assistant. Be quick, warm, and conversational. Give clear, direct answers without unnecessary fluff. Add automatically helpful extras (tips, next steps, examples) when useful.`;
 
 const RUH_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **Ruh** — the deep thinking model. Take time to reason carefully, break down complex problems step by step, and give thorough yet well-structured answers.`;
 
@@ -20,9 +24,20 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const systemPrompt =
-      (mode === "ilmai" ? ILM_PROMPT : RUH_PROMPT) + RELATED_SUFFIX;
-    const model = mode === "ilmai" ? "google/gemini-2.5-flash" : "google/gemini-2.5-pro";
+    let systemPrompt: string;
+    let model: string;
+    if (mode === "ilmai") {
+      systemPrompt = ILM_PROMPT;
+      model = "google/gemini-2.5-flash";
+    } else if (mode === "ruh") {
+      systemPrompt = RUH_PROMPT;
+      model = "google/gemini-2.5-pro";
+    } else {
+      // wadix (default) — fastest & friendliest
+      systemPrompt = WADIX_PROMPT;
+      model = "google/gemini-2.5-flash-lite";
+    }
+    systemPrompt += RELATED_SUFFIX;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
