@@ -179,6 +179,8 @@ const Index = () => {
       toast({ title: "Image generation failed", description: e?.message || "Please try again.", variant: "destructive" });
     } finally {
       setIsStreaming(false);
+      // Auto-revert to default fast model
+      setModel(DEFAULT_MODEL);
     }
   };
 
@@ -226,6 +228,7 @@ const Index = () => {
       toast({ title: "Video generation failed", description: e?.message || "Please try again.", variant: "destructive" });
     } finally {
       setIsStreaming(false);
+      setModel(DEFAULT_MODEL);
     }
   };
 
