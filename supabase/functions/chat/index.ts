@@ -114,8 +114,8 @@ Deno.serve(async (req) => {
     const status = lastErr?.status === 429 ? 429 : 500;
     const message =
       status === 429
-        ? "All providers rate-limited. Please try again in a moment."
-        : "AI provider error. Please try again.";
+        ? "⏳ WadiAi is handling lots of requests right now — please try again in a moment!"
+        : "🚧 WadiAi is currently under quick maintenance & getting an upgrade. Our team is polishing things up — please try again shortly. Thank you for your patience! ✨";
     return new Response(JSON.stringify({ error: message }), {
       status,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
