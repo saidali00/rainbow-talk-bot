@@ -27,9 +27,30 @@ function pickLovableModel(mode: string) {
 }
 
 function pickOpenRouterModels(mode: string): string[] {
-  // Single fast free model only — avoid waiting through a chain of failures
-  if (mode === "ruh") return ["meta-llama/llama-3.3-70b-instruct:free"];
-  return ["meta-llama/llama-3.2-3b-instruct:free"]; // small + very fast
+  // Reliable free models with fallbacks — try several providers so a single rate-limit doesn't break the chat
+  if (mode === "ruh") {
+    return [
+      "deepseek/deepseek-chat-v3.1:free",
+      "deepseek/deepseek-r1:free",
+      "google/gemini-2.0-flash-exp:free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+    ];
+  }
+  if (mode === "ilmai") {
+    return [
+      "google/gemini-2.0-flash-exp:free",
+      "deepseek/deepseek-chat-v3.1:free",
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "qwen/qwen-2.5-72b-instruct:free",
+    ];
+  }
+  // wadix — fast & friendly
+  return [
+    "google/gemini-2.0-flash-exp:free",
+    "deepseek/deepseek-chat-v3.1:free",
+    "meta-llama/llama-3.3-70b-instruct:free",
+    "qwen/qwen-2.5-7b-instruct:free",
+  ];
 }
 
 Deno.serve(async (req) => {
@@ -107,7 +128,7 @@ Deno.serve(async (req) => {
       const t = await orResp.text().catch(() => "");
       console.warn(`OpenRouter ${orModel} failed:`, orResp.status, t);
       lastErr = { status: orResp.status, text: t };
-      // Try next model on 404/429/503; bail on auth errors
+      // Bail only on auth errors; otherwise try next model (covers 402/404/429/503/upstream rate limits)
       if (orResp.status === 401 || orResp.status === 403) break;
     }
 
