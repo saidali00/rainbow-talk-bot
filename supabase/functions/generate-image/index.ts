@@ -17,7 +17,7 @@ Deno.serve(async (req) => {
     }
 
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
+    const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
     // Build content: text + optional images (max 10)
     const imgs: string[] = Array.isArray(images) ? images.slice(0, 10) : [];
@@ -28,47 +28,73 @@ Deno.serve(async (req) => {
       }
     }
 
-    const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash-image",
-        messages: [{ role: "user", content: imgs.length > 0 ? userContent : prompt }],
-        modalities: ["image", "text"],
-      }),
-    });
+    // 1) Try Lovable AI (Nano Banana)
+    let imageUrl: string | undefined;
+    let text = "";
+    let lovableStatus = 0;
 
-    if (!resp.ok) {
-      if (resp.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (resp.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await resp.text();
-      console.error("Image gen error:", resp.status, t);
-      return new Response(JSON.stringify({ error: "Image generation failed" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+    if (LOVABLE_API_KEY) {
+      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image",
+          messages: [{ role: "user", content: imgs.length > 0 ? userContent : prompt }],
+          modalities: ["image", "text"],
+        }),
       });
+      lovableStatus = resp.status;
+
+      if (resp.ok) {
+        const data = await resp.json();
+        imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
+        text = data.choices?.[0]?.message?.content || "";
+      } else {
+        const t = await resp.text().catch(() => "");
+        console.warn("Lovable image gen failed, will try OpenRouter:", resp.status, t);
+      }
     }
 
-    const data = await resp.json();
-    const imageUrl = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
-    const text = data.choices?.[0]?.message?.content || "";
+    // 2) Fallback: OpenRouter free image model (Gemini 2.5 Flash Image Preview)
+    if (!imageUrl && OPENROUTER_API_KEY) {
+      const orResp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://wadiai.lovable.app",
+          "X-Title": "WadiAi",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash-image-preview:free",
+          messages: [{ role: "user", content: imgs.length > 0 ? userContent : prompt }],
+          modalities: ["image", "text"],
+        }),
+      });
+
+      if (orResp.ok) {
+        const data = await orResp.json();
+        imageUrl =
+          data.choices?.[0]?.message?.images?.[0]?.image_url?.url ||
+          data.choices?.[0]?.message?.images?.[0]?.url;
+        text = text || data.choices?.[0]?.message?.content || "";
+      } else {
+        const t = await orResp.text().catch(() => "");
+        console.error("OpenRouter image gen failed:", orResp.status, t);
+      }
+    }
 
     if (!imageUrl) {
-      return new Response(JSON.stringify({ error: "No image returned" }), {
-        status: 500,
+      const status = lovableStatus === 429 ? 429 : 500;
+      const message =
+        status === 429
+          ? "Rate limit reached. Try again shortly."
+          : "Image generation failed on all providers. Please try again.";
+      return new Response(JSON.stringify({ error: message }), {
+        status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
