@@ -51,12 +51,12 @@ Deno.serve(async (req) => {
     const bad = responses.find((r) => !r.ok);
     if (bad) {
       if (bad.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
+        return new Response(JSON.stringify({ error: "🎬 ManzarX is currently under construction 🚧 — our cinematic engine is being upgraded to render even more stunning videos for you. Please check back in a little while. Thank you for your patience! ✨" }), {
           status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (bad.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
+        return new Response(JSON.stringify({ error: "🎬 ManzarX is busy rendering lots of scenes right now — please try again in a moment!" }), {
           status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     }
 
     if (frames.length === 0) {
-      return new Response(JSON.stringify({ error: "No frames generated" }), {
+      return new Response(JSON.stringify({ error: "🎬 ManzarX is currently under construction 🚧 — we couldn't render your video right now. Our team is working hard to make it even better. Please try again shortly! ✨" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

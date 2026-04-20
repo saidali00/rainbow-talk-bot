@@ -91,8 +91,8 @@ Deno.serve(async (req) => {
       const status = lovableStatus === 429 ? 429 : 500;
       const message =
         status === 429
-          ? "Rate limit reached. Try again shortly."
-          : "Image generation failed on all providers. Please try again.";
+          ? "🎨 TasveerAI is taking a quick breather — too many requests right now. Please try again in a moment!"
+          : "🚧 TasveerAI is currently under construction & upgrading to bring you sharper, more beautiful images. Our team is polishing the brushes — please try again shortly. Thank you for your patience! ✨";
       return new Response(JSON.stringify({ error: message }), {
         status,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
