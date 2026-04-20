@@ -22,25 +22,14 @@ function pickPrompt(mode: string) {
 
 function pickLovableModel(mode: string) {
   if (mode === "ruh") return "google/gemini-2.5-pro";
-  return "google/gemini-2.5-flash"; // wadix + ilmai
+  if (mode === "ilmai") return "google/gemini-2.5-flash";
+  return "google/gemini-2.5-flash-lite"; // wadix — fastest tier
 }
 
 function pickOpenRouterModels(mode: string): string[] {
-  // Free-tier model chain — first tried, fall back if 404/429/upstream-busy
-  const base = [
-    "z-ai/glm-4.5-air:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "meta-llama/llama-3.2-3b-instruct:free",
-    "openai/gpt-oss-20b:free",
-  ];
-  if (mode === "ruh") {
-    return [
-      "meta-llama/llama-3.3-70b-instruct:free",
-      "z-ai/glm-4.5-air:free",
-      "meta-llama/llama-3.2-3b-instruct:free",
-    ];
-  }
-  return base;
+  // Single fast free model only — avoid waiting through a chain of failures
+  if (mode === "ruh") return ["meta-llama/llama-3.3-70b-instruct:free"];
+  return ["meta-llama/llama-3.2-3b-instruct:free"]; // small + very fast
 }
 
 Deno.serve(async (req) => {
