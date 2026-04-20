@@ -30,26 +30,26 @@ function pickOpenRouterModels(mode: string): string[] {
   // Reliable free models with fallbacks — try several providers so a single rate-limit doesn't break the chat
   if (mode === "ruh") {
     return [
-      "deepseek/deepseek-chat-v3.1:free",
-      "deepseek/deepseek-r1:free",
-      "google/gemini-2.0-flash-exp:free",
+      "openai/gpt-oss-120b:free",
+      "nousresearch/hermes-3-llama-3.1-405b:free",
       "meta-llama/llama-3.3-70b-instruct:free",
+      "google/gemma-4-31b-it:free",
     ];
   }
   if (mode === "ilmai") {
     return [
-      "google/gemini-2.0-flash-exp:free",
-      "deepseek/deepseek-chat-v3.1:free",
+      "google/gemma-3-27b-it:free",
+      "openai/gpt-oss-20b:free",
       "meta-llama/llama-3.3-70b-instruct:free",
-      "qwen/qwen-2.5-72b-instruct:free",
+      "google/gemma-4-26b-a4b-it:free",
     ];
   }
   // wadix — fast & friendly
   return [
-    "google/gemini-2.0-flash-exp:free",
-    "deepseek/deepseek-chat-v3.1:free",
+    "google/gemma-3-12b-it:free",
+    "openai/gpt-oss-20b:free",
     "meta-llama/llama-3.3-70b-instruct:free",
-    "qwen/qwen-2.5-7b-instruct:free",
+    "meta-llama/llama-3.2-3b-instruct:free",
   ];
 }
 
