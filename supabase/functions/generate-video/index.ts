@@ -27,13 +27,11 @@ Deno.serve(async (req) => {
     };
     const styleHint = styleHints[style] || styleHints.real;
 
-    // Generate 4 keyframes for a 10-second video sequence
+    // Generate 4 keyframes IN PARALLEL — ~4x faster than sequential
     const frameCount = 4;
-    const frames: string[] = [];
-
-    for (let i = 0; i < frameCount; i++) {
+    const frameRequests = Array.from({ length: frameCount }, (_, i) => {
       const framePrompt = `${prompt}. ${styleHint}. Cinematic frame ${i + 1} of ${frameCount}, slight camera movement and subject motion progression, video keyframe, 16:9 aspect ratio.`;
-      const resp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      return fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${LOVABLE_API_KEY}`,
@@ -45,28 +43,30 @@ Deno.serve(async (req) => {
           modalities: ["image", "text"],
         }),
       });
+    });
 
-      if (!resp.ok) {
-        if (resp.status === 429) {
-          return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
-            status: 429,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        if (resp.status === 402) {
-          return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
-            status: 402,
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-          });
-        }
-        const t = await resp.text();
-        console.error("Frame gen error:", resp.status, t);
-        return new Response(JSON.stringify({ error: "Video generation failed" }), {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const responses = await Promise.all(frameRequests);
+
+    // Check for credit/rate errors first
+    const bad = responses.find((r) => !r.ok);
+    if (bad) {
+      if (bad.status === 402) {
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
+      if (bad.status === 429) {
+        return new Response(JSON.stringify({ error: "Rate limit reached. Try again shortly." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const t = await bad.text().catch(() => "");
+      console.error("Frame gen error:", bad.status, t);
+    }
 
+    const frames: string[] = [];
+    for (const resp of responses) {
+      if (!resp.ok) continue;
       const data = await resp.json();
       const url = data.choices?.[0]?.message?.images?.[0]?.image_url?.url;
       if (url) frames.push(url);
