@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, Mic } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export interface Conversation {
   id: string;
@@ -81,6 +82,16 @@ const ChatSidebar = ({
                 <span>Chat History</span>
                 <span className="ml-auto text-xs opacity-50">{conversations.length}</span>
               </button>
+
+              <Link
+                to="/coach"
+                onClick={handleClose}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                <Mic size={18} className="opacity-70" />
+                <span>Speaking Coach</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-primary/20 text-primary font-semibold">NEW</span>
+              </Link>
 
               <button
                 onClick={() => setView("about")}
