@@ -1,5 +1,5 @@
-import { useState, useRef, useEffect } from "react";
-import { Send, Mic, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Film } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Send, Mic, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Film, Sparkles } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ModelPicker, { ModelKey, MODELS } from "./ModelPicker";
 
@@ -26,6 +26,50 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
 
   const isTasveer = model === "tasveerai";
   const isManzar = model === "manzarx";
+
+  // Smart typing-time suggestions (instant, client-side)
+  const suggestions = useMemo(() => {
+    const v = value.trim();
+    if (!v || v.length < 2 || disabled) return [];
+    const lower = v.toLowerCase();
+
+    if (isTasveer) {
+      return [
+        `${v} — cinematic, ultra detailed, 4k`,
+        `${v} in a vibrant anime style`,
+        `${v}, soft lighting, photorealistic`,
+      ];
+    }
+    if (isManzar) {
+      return [
+        `${v}, slow cinematic camera pan, golden hour`,
+        `${v}, dynamic motion, dramatic lighting`,
+        `${v}, dreamy slow-mo, vivid colors`,
+      ];
+    }
+
+    // Chat modes — context-aware completions
+    const starters: string[] = [];
+    if (/^(how|why|what|when|where|who)\b/i.test(v)) {
+      starters.push(`${v} — explain step by step`, `${v} with a simple example`, `${v} (short answer)`);
+    } else if (lower.startsWith("write") || lower.startsWith("create") || lower.startsWith("generate")) {
+      starters.push(`${v} in a friendly tone`, `${v} — keep it short`, `${v} with examples`);
+    } else if (lower.startsWith("fix") || lower.startsWith("debug") || lower.startsWith("solve")) {
+      starters.push(`${v} and explain the cause`, `${v} step by step`, `${v} with code example`);
+    } else if (lower.startsWith("explain") || lower.startsWith("teach") || lower.startsWith("define")) {
+      starters.push(`${v} like I'm 10`, `${v} with a real-world example`, `${v} in 3 bullet points`);
+    } else {
+      starters.push(
+        `Explain: ${v}`,
+        `Give me a quick summary about ${v}`,
+        `What are the key points of ${v}?`
+      );
+    }
+    return starters.slice(0, 3);
+  }, [value, isTasveer, isManzar, disabled]);
+
+  const [showSuggestions, setShowSuggestions] = useState(true);
+  useEffect(() => { setShowSuggestions(true); }, [value]);
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -161,6 +205,23 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
           {model === "manzarx" && "Generates a 10s animated video"}
         </span>
       </div>
+
+      {/* Typing-time smart suggestions */}
+      {showSuggestions && suggestions.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5 animate-fade-in-up">
+          {suggestions.map((s, i) => (
+            <button
+              key={i}
+              onClick={() => { setValue(s); setShowSuggestions(false); textareaRef.current?.focus(); }}
+              className={`group inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-border bg-card hover:bg-muted transition-all shadow-sm hover:shadow-md hover:scale-[1.02] max-w-full`}
+              title="Tap to use"
+            >
+              <Sparkles size={12} className={`text-transparent bg-clip-text bg-gradient-to-br ${m.gradient} fill-current opacity-70 group-hover:opacity-100`} />
+              <span className="truncate max-w-[260px] text-foreground/80 group-hover:text-foreground">{s}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Chat-mode loading ring */}
       {imageLoading && !isTasveer && (
