@@ -4,7 +4,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const SYSTEM = `You are an expert multilingual speaking coach. The user just spoke in their chosen language. Analyze the transcript and return ONLY valid JSON (no markdown fences) with this exact shape:
+const SYSTEM_ANALYZE = `You are an expert multilingual speaking coach. The user just spoke in their chosen language. Analyze the transcript and return ONLY valid JSON (no markdown fences) with this exact shape:
 {
   "confidence": <0-100 integer>,
   "clarity": <0-100 integer>,
@@ -16,11 +16,13 @@ const SYSTEM = `You are an expert multilingual speaking coach. The user just spo
 }
 Score lower for very short, repetitive, or filler-heavy speech. Reply in the same language as the transcript when possible. Keep arrays under 4 items.`;
 
+const SYSTEM_CHAT = `You are a warm, friendly multilingual voice assistant having a spoken conversation. Always reply in the SAME language the user used. Keep replies concise (1-3 sentences), natural, and easy to speak aloud. No markdown, no lists, no emojis — plain conversational text only.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
-    const { transcript, language } = await req.json();
+    const { transcript, language, mode } = await req.json();
     if (!transcript || typeof transcript !== "string") {
       return new Response(JSON.stringify({ error: "transcript required" }), {
         status: 400,
@@ -31,9 +33,12 @@ Deno.serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
-    const userMsg = `Language: ${language || "auto"}\nTranscript:\n"""${transcript}"""`;
+    const isChat = mode === "chat";
+    const userMsg = isChat
+      ? `Language: ${language || "auto"}\nUser said: "${transcript}"`
+      : `Language: ${language || "auto"}\nTranscript:\n"""${transcript}"""`;
     const messages = [
-      { role: "system", content: SYSTEM },
+      { role: "system", content: isChat ? SYSTEM_CHAT : SYSTEM_ANALYZE },
       { role: "user", content: userMsg },
     ];
 
@@ -46,7 +51,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages,
-          response_format: { type: "json_object" },
+          ...(isChat ? {} : { response_format: { type: "json_object" } }),
         }),
       });
       if (r.ok) {
@@ -85,8 +90,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // strip code fences if any
     const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+
+    if (isChat) {
+      return new Response(JSON.stringify({ reply: cleaned }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     let parsed: any;
     try {
       parsed = JSON.parse(cleaned);
