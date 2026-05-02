@@ -19,7 +19,7 @@ export async function streamChat({
   onError,
 }: {
   messages: ChatMessage[];
-  mode?: "wadix" | "ruh" | "ilmai";
+  mode?: "wadix" | "ruh" | "ilmai" | "koshur";
   onDelta: (text: string) => void;
   onDone: () => void;
   onError: (error: string) => void;

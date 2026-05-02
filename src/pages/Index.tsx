@@ -101,8 +101,8 @@ const Index = () => {
     setIsStreaming(true);
     let fullContent = "";
 
-    const chatMode: "wadix" | "ruh" | "ilmai" =
-      model === "ilmai" ? "ilmai" : model === "ruh" ? "ruh" : "wadix";
+    const chatMode: "wadix" | "ruh" | "ilmai" | "koshur" =
+      model === "ilmai" ? "ilmai" : model === "ruh" ? "ruh" : model === "koshur" ? "koshur" : "wadix";
 
     await streamChat({
       messages: history,
