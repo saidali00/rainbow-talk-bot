@@ -9,6 +9,7 @@ const LANGUAGES = [
   { code: "en-US", label: "English" },
   { code: "hi-IN", label: "हिन्दी (Hindi)" },
   { code: "ur-PK", label: "اردو (Urdu)" },
+  { code: "ks-IN", label: "کٲشُر (Kashmiri)" },
   { code: "kn-IN", label: "ಕನ್ನಡ (Kannada)" },
   { code: "ta-IN", label: "தமிழ் (Tamil)" },
   { code: "pa-IN", label: "ਪੰਜਾਬੀ (Punjabi)" },
@@ -39,10 +40,12 @@ interface AudioStats {
 }
 
 type Tab = "coach" | "talk" | "about";
+type TalkModel = "default" | "kashour";
 
 const Coach = () => {
   const [tab, setTab] = useState<Tab>("coach");
   const [lang, setLang] = useState("en-US");
+  const [talkModel, setTalkModel] = useState<TalkModel>("default");
 
   // shared mic state
   const [listening, setListening] = useState(false);
@@ -71,6 +74,7 @@ const Coach = () => {
   const listeningRef = useRef(false);
   const tabRef = useRef<Tab>("coach");
   const langRef = useRef(lang);
+  const talkModelRef = useRef<TalkModel>("default");
   const transcriptRef = useRef("");
   const interimRef = useRef("");
 
@@ -83,6 +87,7 @@ const Coach = () => {
 
   useEffect(() => { tabRef.current = tab; }, [tab]);
   useEffect(() => { langRef.current = lang; }, [lang]);
+  useEffect(() => { talkModelRef.current = talkModel; }, [talkModel]);
   useEffect(() => { transcriptRef.current = transcript; }, [transcript]);
   useEffect(() => { interimRef.current = interim; }, [interim]);
 
@@ -300,14 +305,19 @@ const Coach = () => {
     setInterim("");
     setThinking(true);
     try {
+      const useKashour = talkModelRef.current === "kashour";
       const { data, error } = await supabase.functions.invoke("speech-coach", {
-        body: { transcript: userText, language: langRef.current, mode: "chat" },
+        body: {
+          transcript: userText,
+          language: useKashour ? "ks-IN" : langRef.current,
+          mode: useKashour ? "kashour" : "chat",
+        },
       });
       if (error) throw error;
       const reply = (data as any)?.reply || "";
       if (reply) {
         setChatHistory((h) => [...h, { role: "assistant", text: reply }]);
-        speak(reply, langRef.current);
+        speak(reply, useKashour ? "ks-IN" : langRef.current);
       }
     } catch (e: any) {
       toast({ title: "Reply failed", description: e?.message || "Try again.", variant: "destructive" });
