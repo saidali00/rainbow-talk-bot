@@ -546,41 +546,74 @@ const Coach = () => {
         {/* TALK TAB */}
         {tab === "talk" && (
           <div className="w-full space-y-3">
-            {(transcript || interim) && (
-              <div className="p-3 rounded-2xl border border-dashed border-border text-sm text-muted-foreground">
-                <span className="text-foreground">{transcript}</span>
-                {interim && <span className="opacity-60"> {interim}</span>}
-              </div>
-            )}
-            {chatHistory.length === 0 && !listening && !thinking && (
-              <div className="text-center text-sm text-muted-foreground py-8">
-                Ask anything — I'll listen and reply with voice in your language.
-              </div>
-            )}
-            {chatHistory.map((m, i) => (
-              <div
-                key={i}
+            {/* Model picker */}
+            <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-muted/40 border border-border">
+              <button
+                onClick={() => setTalkModel("default")}
                 className={cn(
-                  "p-4 rounded-2xl border animate-fade-in-up text-sm leading-relaxed",
-                  m.role === "user"
-                    ? "bg-muted/40 border-border ml-6"
-                    : "bg-gradient-to-br from-primary/10 via-secondary/10 to-accent/10 border-primary/30 mr-6"
+                  "py-2 px-3 rounded-xl text-xs font-semibold transition-all",
+                  talkModel === "default"
+                    ? "bg-gradient-to-br from-primary to-accent text-primary-foreground shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
-                <div className="flex items-start gap-3">
-                  <p className="flex-1 whitespace-pre-wrap">{m.text}</p>
-                  {m.role === "assistant" && (
-                    <button
-                      onClick={() => (speaking ? stopSpeaking() : speak(m.text, lang))}
-                      className="shrink-0 p-1.5 rounded-lg hover:bg-accent/40 transition-colors"
-                      aria-label={speaking ? "Stop" : "Play"}
-                    >
-                      {speaking ? <Pause size={14} /> : <Play size={14} />}
-                    </button>
-                  )}
-                </div>
+                ✨ Default Voice
+              </button>
+              <button
+                onClick={() => setTalkModel("kashour")}
+                className={cn(
+                  "py-2 px-3 rounded-xl text-xs font-semibold transition-all",
+                  talkModel === "kashour"
+                    ? "bg-gradient-to-br from-amber-500 via-rose-500 to-fuchsia-600 text-white shadow-md"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                🏔 Kashour 2.0 · کٲشُر
+              </button>
+            </div>
+
+            {talkModel === "kashour" && (
+              <div className="text-center text-[11px] text-muted-foreground px-3">
+                Kashour 2.0 replies only in Kashmiri (کٲشُر). Speak in any language — answer comes in Kashmiri voice.
               </div>
-            ))}
+            )}
+
+            {chatHistory.length === 0 && !listening && !thinking && !speaking && (
+              <div className="text-center text-sm text-muted-foreground py-10">
+                {talkModel === "kashour"
+                  ? "ٹَیپ کَرِو اَتھ گول — کٲشِرِس مَنٛز جَواب آسِی"
+                  : "Tap the orb and ask anything — voice only, no text."}
+              </div>
+            )}
+
+            {/* Voice-only indicators (no transcript, no chat text) */}
+            {(listening || thinking || speaking) && (
+              <div className="flex flex-col items-center gap-2 py-6">
+                <div className="flex items-center gap-1.5">
+                  {[0, 1, 2, 3, 4].map((i) => (
+                    <span
+                      key={i}
+                      className="w-1.5 rounded-full bg-gradient-to-b from-primary to-accent"
+                      style={{
+                        height: `${10 + Math.abs(Math.sin((Date.now() / 200) + i)) * (listening ? 24 + level * 60 : speaking ? 22 : 14)}px`,
+                        opacity: listening || speaking ? 1 : 0.5,
+                        transition: "height 120ms ease-out",
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs font-medium text-muted-foreground">
+                  {speaking ? "🔊 Replying…" : thinking ? "💭 Thinking…" : "🎙 Listening…"}
+                </p>
+              </div>
+            )}
+
+            {/* Quiet history pill — count only, no message text */}
+            {chatHistory.length > 0 && !listening && !thinking && !speaking && (
+              <div className="text-center text-[11px] text-muted-foreground py-2">
+                {Math.floor(chatHistory.length / 2)} voice exchange{Math.floor(chatHistory.length / 2) === 1 ? "" : "s"} · tap the orb to continue
+              </div>
+            )}
           </div>
         )}
 
