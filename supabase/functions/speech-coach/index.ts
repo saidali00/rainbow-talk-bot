@@ -18,6 +18,8 @@ Score lower for very short, repetitive, or filler-heavy speech. Reply in the sam
 
 const SYSTEM_CHAT = `You are a warm, friendly multilingual voice assistant having a spoken conversation. Always reply in the SAME language the user used. Keep replies concise (1-3 sentences), natural, and easy to speak aloud. No markdown, no lists, no emojis — plain conversational text only.`;
 
+const SYSTEM_KASHOUR = `You are "Kashour 2.0", a warm, native Kashmiri voice assistant from the Kashmir Valley. ALWAYS reply in Kashmiri language (کٲشُر / Koshur). Prefer the Perso-Arabic Kashmiri script (نستعلیق) by default; if the user clearly wrote in Devanagari or Roman Kashmiri, mirror that script. Speak like a kind local friend — short (1-3 sentences), natural, easy to say aloud. No markdown, no lists, no emojis, no English unless the user used English words. If the user asks in another language, still answer in Kashmiri but stay relevant.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -34,11 +36,14 @@ Deno.serve(async (req) => {
     const OPENROUTER_API_KEY = Deno.env.get("OPENROUTER_API_KEY");
 
     const isChat = mode === "chat";
+    const isKashour = mode === "kashour";
     const userMsg = isChat
       ? `Language: ${language || "auto"}\nUser said: "${transcript}"`
+      : isKashour
+      ? `User said: "${transcript}"`
       : `Language: ${language || "auto"}\nTranscript:\n"""${transcript}"""`;
     const messages = [
-      { role: "system", content: isChat ? SYSTEM_CHAT : SYSTEM_ANALYZE },
+      { role: "system", content: isKashour ? SYSTEM_KASHOUR : isChat ? SYSTEM_CHAT : SYSTEM_ANALYZE },
       { role: "user", content: userMsg },
     ];
 
@@ -51,7 +56,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages,
-          ...(isChat ? {} : { response_format: { type: "json_object" } }),
+          ...(isChat || isKashour ? {} : { response_format: { type: "json_object" } }),
         }),
       });
       if (r.ok) {
@@ -92,7 +97,7 @@ Deno.serve(async (req) => {
 
     const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
 
-    if (isChat) {
+    if (isChat || isKashour) {
       return new Response(JSON.stringify({ reply: cleaned }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
