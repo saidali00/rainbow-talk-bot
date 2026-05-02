@@ -190,6 +190,8 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
     ? "Ask IlmAI any study question..."
     : model === "ruh"
     ? "Ask Ruh anything (deep thinking)..."
+    : model === "koshur"
+    ? "Koshur 2.0 سٕتؠ کانٛہہ پرژھیو... (Ask in any language — replies in Kashmiri)"
     : "Ask WadiX anything — fast & friendly...";
 
   return (
@@ -203,6 +205,7 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
           {model === "ilmai" && "Study companion • clear explanations"}
           {model === "tasveerai" && "Nano Banana • image create or edit"}
           {model === "manzarx" && "Generates a 10s animated video"}
+          {model === "koshur" && "کٲشُر • Native Kashmiri replies"}
         </span>
       </div>
 

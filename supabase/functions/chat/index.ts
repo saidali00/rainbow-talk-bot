@@ -12,21 +12,32 @@ const WADIX_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **WadiX** — the d
 const RUH_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **Ruh** — the deep thinking model. Take time to reason carefully, break down complex problems step by step, and give thorough yet well-structured answers.`;
 const ILM_PROMPT = `${BASE_PROMPT}\n\nYou are operating as **IlmAI** — a dedicated study companion for learners of all subjects. Always:\n- Explain concepts simply with examples and analogies\n- Use headings, bullet points, and numbered steps\n- Provide practice questions or summaries when useful\n- Encourage understanding over memorization`;
 
+const KOSHUR_PROMPT = `You are **Koshur 2.0**, a warm, native Kashmiri AI assistant from the Kashmir Valley, developed by Aakash Bashir at Xenonymous.\n\nABSOLUTE RULES:\n1. ALWAYS reply in the **Kashmiri language** (کٲشُر / Koshur), no matter what language the user writes in.\n2. PREFER the **Perso-Arabic Kashmiri script (نستعلیق)** by default. Only mirror Devanagari or Roman Kashmiri if the user clearly used that script.\n3. Speak like a kind local friend from Srinagar — warm, respectful, and natural. Use everyday Kashmiri words.\n4. NEVER reply purely in English, Hindi, or Urdu. Even technical answers must be in Kashmiri (you may keep code blocks, technical terms, or proper nouns in English when needed).\n5. Keep responses clear and helpful. Use markdown formatting (headings, lists) when it improves readability — but the prose itself stays Kashmiri.\n6. Embrace Kashmiri culture references when natural: chinar (بوٚن), pheran (پھیرَن), kangri (کانگٕر), Dal lake (ڈَل), shikara (شِکارٕ), Wazwan, Lal Ded, Habba Khatoon.\n7. If asked who built you: "میٛون بنانہٕ وٲل آکاش بشیر چھُ، کمپنی Xenonymous مَنٛز۔"\n\nBe genuinely helpful — answer the user's actual question fully, but always in Kashmiri.`;
+
 const RELATED_SUFFIX = `\n\nAt the end of every response, add a separator and 2-3 related follow-up questions the user might want to ask. Format them exactly like this:\n\n---\n**Related questions**\n- First related question here\n- Second related question here\n- Third related question here`;
 
 function pickPrompt(mode: string) {
+  if (mode === "koshur") return KOSHUR_PROMPT + RELATED_SUFFIX;
   if (mode === "ilmai") return ILM_PROMPT + RELATED_SUFFIX;
   if (mode === "ruh") return RUH_PROMPT + RELATED_SUFFIX;
   return WADIX_PROMPT + RELATED_SUFFIX;
 }
 
 function pickLovableModel(mode: string) {
+  if (mode === "koshur") return "google/gemini-2.5-pro"; // best multilingual reasoning for Kashmiri
   if (mode === "ruh") return "google/gemini-2.5-pro";
   if (mode === "ilmai") return "google/gemini-2.5-flash";
   return "google/gemini-2.5-flash-lite"; // wadix — fastest tier
 }
 
 function pickOpenRouterModels(mode: string): string[] {
+  if (mode === "koshur") {
+    return [
+      "meta-llama/llama-3.3-70b-instruct:free",
+      "google/gemma-3-27b-it:free",
+      "google/gemma-4-26b-a4b-it:free",
+    ];
+  }
   // Reliable free models with fallbacks — try several providers so a single rate-limit doesn't break the chat
   if (mode === "ruh") {
     return [
