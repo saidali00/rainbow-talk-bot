@@ -10,6 +10,7 @@ import VideoPlayer from "./VideoPlayer";
 import RuhLoader from "./RuhLoader";
 import IlmLoader from "./IlmLoader";
 import WadiTypingLoader from "./WadiTypingLoader";
+import KoshurStreamScene from "./KoshurStreamScene";
 import { ModelKey } from "./ModelPicker";
 
 interface ChatMessageProps {
@@ -149,6 +150,9 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
         {/* Unique thinking loader per chat model */}
   {showThinkLoader && chatMode === "ilmai" && <IlmLoader prompt={"Preparing your study answer..."} />}
   {showThinkLoader && chatMode === "ruh" && <RuhLoader />}
+  {!isUser && chatMode === "koshur" && (isStreaming || showThinkLoader) && (
+    <KoshurStreamScene active />
+  )}
   {/* WadiX streams directly — no thinking loader */}
 
         {isUser ? (
