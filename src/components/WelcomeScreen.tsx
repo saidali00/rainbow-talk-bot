@@ -1,4 +1,5 @@
 import { Code, Lightbulb, Pen, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import wadiLogo from "@/assets/wadi-ai-logo.png";
 
 interface WelcomeScreenProps {
@@ -13,6 +14,23 @@ const suggestions = [
 ];
 
 const WelcomeScreen = ({ onSuggestionClick }: WelcomeScreenProps) => {
+  // Earthquake → settle animation. Shake hard for ~1.6s, then "settle" for the
+  // remainder of a 10s cycle, then repeat. Gives a playful broken→fixed feel.
+  const [phase, setPhase] = useState<"quake" | "settle">("quake");
+  useEffect(() => {
+    let t1: number;
+    let t2: number;
+    const loop = () => {
+      setPhase("quake");
+      t1 = window.setTimeout(() => setPhase("settle"), 1600);
+      t2 = window.setTimeout(loop, 10000);
+    };
+    loop();
+    return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, []);
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-4 animate-fade-in-up">
       <div className="mb-2">
@@ -23,11 +41,14 @@ const WelcomeScreen = ({ onSuggestionClick }: WelcomeScreenProps) => {
       <p className="text-muted-foreground text-sm mb-8">How can I help you today?</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-xl">
-        {suggestions.map((s) => (
+        {suggestions.map((s, i) => (
           <button
             key={s.label}
             onClick={() => onSuggestionClick(s.prompt)}
-            className="flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:shadow-md hover:border-primary/30 transition-all text-left group"
+            style={{ animationDelay: `${i * 0.08}s` }}
+            className={`flex items-start gap-3 p-4 rounded-2xl border border-border bg-card hover:shadow-md hover:border-primary/30 text-left group transition-colors ${
+              phase === "quake" ? "animate-quake" : "transition-transform duration-700"
+            }`}
           >
             <div className="p-2 rounded-xl bg-muted text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
               <s.icon size={16} />
@@ -39,6 +60,9 @@ const WelcomeScreen = ({ onSuggestionClick }: WelcomeScreenProps) => {
           </button>
         ))}
       </div>
+      <p className="mt-3 text-[10px] text-muted-foreground/70">
+        {phase === "quake" ? "🌋 Aftershock... hold on" : "✓ Steady"}
+      </p>
     </div>
   );
 };

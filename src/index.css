@@ -214,6 +214,52 @@
   50% { transform: translateY(-20px) scale(1.2); opacity: 0.6; }
 }
 
+/* Koshur 2.0 — snow + bear */
+@keyframes koshur-snow-fall {
+  0% { transform: translateY(-10%) translateX(0); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(110%) translateX(20px); opacity: 0.2; }
+}
+@keyframes koshur-bear-run {
+  0% { transform: translateX(-20%) translateY(0); }
+  50% { transform: translateX(50%) translateY(-3px); }
+  100% { transform: translateX(120%) translateY(0); }
+}
+@keyframes koshur-bear-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-4px) rotate(2deg); }
+}
+@keyframes koshur-ground-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: -200px 0; }
+}
+
+/* Earthquake shake — used on home suggestions */
+@keyframes quake-shake {
+  0%, 100% { transform: translate(0,0) rotate(0deg); }
+  10% { transform: translate(-3px, 2px) rotate(-1.2deg); }
+  20% { transform: translate(4px, -1px) rotate(1.4deg); }
+  30% { transform: translate(-5px, 3px) rotate(-1.8deg); }
+  40% { transform: translate(3px, -2px) rotate(1deg); }
+  50% { transform: translate(-2px, 1px) rotate(-0.6deg); }
+  60% { transform: translate(4px, 2px) rotate(1.2deg); }
+  70% { transform: translate(-3px, -1px) rotate(-1deg); }
+  80% { transform: translate(2px, 2px) rotate(0.8deg); }
+  90% { transform: translate(-1px, -1px) rotate(-0.4deg); }
+}
+@keyframes quake-settle {
+  0% { transform: translate(0,0) rotate(0deg); }
+  100% { transform: translate(0,0) rotate(0deg); }
+}
+.animate-quake {
+  animation: quake-shake 0.55s ease-in-out infinite;
+}
+.animate-quake-settle {
+  animation: quake-shake 1.2s ease-out 1 forwards;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+
 .splash-season-text {
   background: linear-gradient(90deg, #2dd4bf, #3b82f6, #f59e0b, #ef4444, #2dd4bf);
   background-size: 300% 100%;
