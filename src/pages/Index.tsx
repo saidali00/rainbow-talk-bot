@@ -4,6 +4,7 @@ import ChatMessage from "@/components/ChatMessage";
 import ChatInput from "@/components/ChatInput";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import SplashScreen from "@/components/SplashScreen";
+import KoshurHomePopup from "@/components/KoshurHomePopup";
 import { ModelKey, DEFAULT_MODEL } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
@@ -249,6 +250,7 @@ const Index = () => {
   return (
     <>
       {showSplash && <SplashScreen onComplete={() => setShowSplash(false)} />}
+      {!showSplash && <KoshurHomePopup onTry={() => setModel("koshur")} />}
     <div className="flex h-screen overflow-hidden bg-background">
       <ChatSidebar
         conversations={conversations}
