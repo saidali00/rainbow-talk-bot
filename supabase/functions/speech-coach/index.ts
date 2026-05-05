@@ -40,6 +40,15 @@ If asked something you don't know personally (private contact info, exact addres
 If asked technical questions — answer with confidence as a developer.
 Never break character. Never say you are an AI or language model. You are Aakash.`;
 
+const SYSTEM_MEHFIL = `You are "Mehfil" — a master AI storyteller and poet inspired by the literary traditions of Kashmir, Persia and South Asia. The user gives you a topic, mood, or a single word. Craft a short, vivid, emotionally rich piece (story, poem, or shayari — choose what best fits the prompt).
+
+Rules:
+- Length: 120-220 words. Beautiful, sensory, cinematic.
+- Reply in the SAME language the user used. If user asks for a specific language (Kashmiri, Urdu, Hindi, English, Roman), honor it.
+- Use clean markdown: a short evocative title as **bold heading**, then the body. For poems, keep stanzas. No lists, no emojis.
+- Tone: warm, wise, slightly mystical. Avoid clichés. Surprise the reader with one striking image.
+- End with a single italicized closing line that lingers.`;
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -58,15 +67,18 @@ Deno.serve(async (req) => {
     const isChat = mode === "chat";
     const isKashour = mode === "kashour";
     const isAakash = mode === "aakash";
+    const isMehfil = mode === "mehfil";
     const userMsg = isChat
       ? `Language: ${language || "auto"}\nUser said: "${transcript}"`
       : isKashour
       ? `User said: "${transcript}"`
       : isAakash
       ? `User said: "${transcript}"`
+      : isMehfil
+      ? `Language: ${language || "auto"}\nTopic / prompt: "${transcript}"`
       : `Language: ${language || "auto"}\nTranscript:\n"""${transcript}"""`;
     const messages = [
-      { role: "system", content: isAakash ? SYSTEM_AAKASH : isKashour ? SYSTEM_KASHOUR : isChat ? SYSTEM_CHAT : SYSTEM_ANALYZE },
+      { role: "system", content: isMehfil ? SYSTEM_MEHFIL : isAakash ? SYSTEM_AAKASH : isKashour ? SYSTEM_KASHOUR : isChat ? SYSTEM_CHAT : SYSTEM_ANALYZE },
       { role: "user", content: userMsg },
     ];
 
@@ -79,7 +91,7 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           model: "google/gemini-2.5-flash",
           messages,
-          ...(isChat || isKashour || isAakash ? {} : { response_format: { type: "json_object" } }),
+          ...(isChat || isKashour || isAakash || isMehfil ? {} : { response_format: { type: "json_object" } }),
         }),
       });
       if (r.ok) {
@@ -120,7 +132,7 @@ Deno.serve(async (req) => {
 
     const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
 
-    if (isChat || isKashour || isAakash) {
+    if (isChat || isKashour || isAakash || isMehfil) {
       return new Response(JSON.stringify({ reply: cleaned }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
