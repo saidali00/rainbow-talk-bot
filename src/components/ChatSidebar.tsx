@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, Mic, Feather } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, Mic, Feather, Globe2 } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export interface Conversation {
@@ -101,6 +101,16 @@ const ChatSidebar = ({
                 <Feather size={18} className="opacity-70" />
                 <span>Mehfil · Storyteller</span>
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500/30 to-rose-500/30 text-amber-200 font-semibold">NEW</span>
+              </Link>
+
+              <Link
+                to="/search"
+                onClick={handleClose}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                <Globe2 size={18} className="opacity-70" />
+                <span>WadiSearch · Live Web</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500/30 to-indigo-500/30 text-sky-200 font-semibold">NEW</span>
               </Link>
 
               <button

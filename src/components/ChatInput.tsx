@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect, useMemo } from "react";
-import { Send, Mic, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Film, Sparkles } from "lucide-react";
+import { Send, Mic, Plus, Image as ImageIcon, X, Loader2, CheckCircle2, Film, Sparkles, FileText } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import ModelPicker, { ModelKey, MODELS } from "./ModelPicker";
+import { extractTextFromFile } from "@/lib/pdfText";
 
 const MAX_PHOTOS = 10;
 
@@ -17,12 +18,15 @@ interface ChatInputProps {
 const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, onModelChange }: ChatInputProps) => {
   const [value, setValue] = useState("");
   const [attachedImage, setAttachedImage] = useState<string | null>(null); // for chat (Ruh/IlmAI vision)
+  const [attachedDoc, setAttachedDoc] = useState<{ name: string; text: string } | null>(null);
   const [tasveerPhotos, setTasveerPhotos] = useState<string[]>([]); // for TasveerAI (max 10)
   const [showAttachMenu, setShowAttachMenu] = useState(false);
   const [imageLoading, setImageLoading] = useState(false);
+  const [docLoading, setDocLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const tasveerInputRef = useRef<HTMLInputElement>(null);
+  const docInputRef = useRef<HTMLInputElement>(null);
 
   const isTasveer = model === "tasveerai";
   const isManzar = model === "manzarx";
@@ -100,9 +104,15 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
       return;
     }
     if (!trimmed && !attachedImage) return;
-    onSend(trimmed || "What's in this image?", attachedImage || undefined);
+    let finalText = trimmed || (attachedImage ? "What's in this image?" : "");
+    if (attachedDoc) {
+      const docPreview = attachedDoc.text.slice(0, 12000);
+      finalText = `${finalText || "Please analyze the attached document."}\n\n--- Attached document: ${attachedDoc.name} ---\n${docPreview}\n--- End of document ---`;
+    }
+    onSend(finalText, attachedImage || undefined);
     setValue("");
     setAttachedImage(null);
+    setAttachedDoc(null);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -142,6 +152,24 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
     };
     reader.readAsDataURL(file);
     e.target.value = "";
+  };
+
+  const handleDocSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setShowAttachMenu(false);
+    setDocLoading(true);
+    try {
+      const text = await extractTextFromFile(file);
+      if (!text.trim()) throw new Error("No readable text found");
+      setAttachedDoc({ name: file.name, text });
+      toast({ title: "✓ Document attached", description: `${file.name} — ask anything about it.` });
+    } catch (err: any) {
+      toast({ title: "Couldn't read document", description: err?.message || "Try another file.", variant: "destructive" });
+    } finally {
+      setDocLoading(false);
+      e.target.value = "";
+    }
   };
 
   const handleTasveerFiles = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,6 +262,24 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
         </div>
       )}
 
+      {docLoading && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-border bg-card shadow-sm animate-fade-in-up">
+          <Loader2 size={16} className="animate-spin text-primary" />
+          <span className="text-xs text-muted-foreground">Reading document...</span>
+        </div>
+      )}
+
+      {attachedDoc && !docLoading && (
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-primary/40 bg-card shadow-sm animate-scale-in max-w-full">
+          <FileText size={14} className="text-primary shrink-0" />
+          <span className="text-xs font-semibold text-foreground truncate max-w-[200px]">{attachedDoc.name}</span>
+          <span className="text-[10px] text-muted-foreground">{Math.round(attachedDoc.text.length / 1000)}k chars</span>
+          <button onClick={() => setAttachedDoc(null)} className="p-0.5 rounded-full hover:bg-muted">
+            <X size={12} />
+          </button>
+        </div>
+      )}
+
       {/* Chat-mode attached image preview */}
       {attachedImage && !isTasveer && !imageLoading && (
         <div className="mb-2 inline-block relative animate-scale-in">
@@ -322,22 +368,38 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
                     </button>
                   </>
                 ) : (
-                  <button
-                    onClick={() => {
-                      fileInputRef.current?.click();
-                      setShowAttachMenu(false);
-                    }}
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
-                  >
-                    <ImageIcon size={16} className="text-primary" />
-                    <span>Attach Photo</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => {
+                        fileInputRef.current?.click();
+                        setShowAttachMenu(false);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap"
+                    >
+                      <ImageIcon size={16} className="text-primary" />
+                      <span>Attach Photo</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        docInputRef.current?.click();
+                        setShowAttachMenu(false);
+                      }}
+                      className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-muted transition-colors w-full text-left whitespace-nowrap border-t border-border"
+                    >
+                      <FileText size={16} className="text-emerald-500" />
+                      <span>Attach Document</span>
+                      <span className="ml-auto text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">
+                        PDF / TXT
+                      </span>
+                    </button>
+                  </>
                 )}
               </div>
             )}
           </div>
 
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleChatFileSelect} className="hidden" />
+          <input ref={docInputRef} type="file" accept=".pdf,.txt,.md,.csv,.json,application/pdf,text/plain" onChange={handleDocSelect} className="hidden" />
           <input
             ref={tasveerInputRef}
             type="file"
