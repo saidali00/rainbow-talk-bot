@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Sun, Moon, Mic, Feather, Globe2 } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
+import ThemePicker from "./ThemePicker";
+import { applyTheme, getStoredTheme } from "@/lib/themes";
 
 export interface Conversation {
   id: string;
@@ -18,7 +20,7 @@ interface ChatSidebarProps {
   onToggle: () => void;
 }
 
-type SidebarView = "menu" | "history" | "about";
+type SidebarView = "menu" | "history" | "about" | "themes";
 
 const ChatSidebar = ({
   conversations,
@@ -30,11 +32,10 @@ const ChatSidebar = ({
   onToggle,
 }: ChatSidebarProps) => {
   const [view, setView] = useState<SidebarView>("menu");
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains("dark"));
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", dark);
-  }, [dark]);
+    applyTheme(getStoredTheme());
+  }, []);
 
   const handleClose = () => {
     onToggle();
@@ -122,15 +123,18 @@ const ChatSidebar = ({
               </button>
 
               <button
-                onClick={() => setDark((d) => !d)}
+                onClick={() => setView("themes")}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
               >
-                {dark ? <Sun size={18} className="opacity-70" /> : <Moon size={18} className="opacity-70" />}
-                <span>{dark ? "Light Mode" : "Dark Mode"}</span>
+                <Palette size={18} className="opacity-70" />
+                <span>Themes & Sounds</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-fuchsia-500/30 to-amber-500/30 text-fuchsia-200 font-semibold">8</span>
               </button>
             </nav>
           </div>
         )}
+
+        {view === "themes" && <ThemePicker onBack={() => setView("menu")} />}
 
         {/* Chat History View */}
         {view === "history" && (
