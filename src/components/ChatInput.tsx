@@ -112,7 +112,8 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
     onSend(finalText, attachedImage || undefined);
     setValue("");
     setAttachedImage(null);
-    setAttachedDoc(null);
+    // keep attachedDoc so the user can ask multiple follow-up questions
+    // about the same PDF without re-uploading. They can remove it via X.
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -270,11 +271,14 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
       )}
 
       {attachedDoc && !docLoading && (
-        <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-primary/40 bg-card shadow-sm animate-scale-in max-w-full">
-          <FileText size={14} className="text-primary shrink-0" />
+        <div className="mb-2 inline-flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-emerald-500/40 bg-emerald-500/5 shadow-sm animate-scale-in max-w-full">
+          <FileText size={14} className="text-emerald-500 shrink-0" />
           <span className="text-xs font-semibold text-foreground truncate max-w-[200px]">{attachedDoc.name}</span>
           <span className="text-[10px] text-muted-foreground">{Math.round(attachedDoc.text.length / 1000)}k chars</span>
-          <button onClick={() => setAttachedDoc(null)} className="p-0.5 rounded-full hover:bg-muted">
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-600 dark:text-emerald-400">
+            ASK ANYTHING
+          </span>
+          <button onClick={() => setAttachedDoc(null)} title="Remove document" className="p-0.5 rounded-full hover:bg-muted">
             <X size={12} />
           </button>
         </div>

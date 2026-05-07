@@ -166,7 +166,8 @@ const ChatSidebar = ({
                         e.stopPropagation();
                         onDelete(conv.id);
                       }}
-                      className="opacity-0 group-hover:opacity-60 hover:!opacity-100 transition-opacity p-1"
+                      aria-label="Delete chat"
+                      className="opacity-70 hover:opacity-100 hover:bg-red-500/20 hover:text-red-400 rounded-md p-1.5 transition-all"
                     >
                       <Trash2 size={13} />
                     </button>
