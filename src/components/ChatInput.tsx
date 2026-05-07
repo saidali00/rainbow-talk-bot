@@ -112,7 +112,8 @@ const ChatInput = ({ onSend, onGenerateImage, onGenerateVideo, disabled, model, 
     onSend(finalText, attachedImage || undefined);
     setValue("");
     setAttachedImage(null);
-    setAttachedDoc(null);
+    // keep attachedDoc so the user can ask multiple follow-up questions
+    // about the same PDF without re-uploading. They can remove it via X.
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
