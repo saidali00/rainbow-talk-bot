@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette, ExternalLink } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemePicker from "./ThemePicker";
 import { applyTheme, getStoredTheme } from "@/lib/themes";
