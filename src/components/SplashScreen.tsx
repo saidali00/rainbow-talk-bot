@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import wadiLogo from "@/assets/wadi-ai-logo.png";
+import { playWelcomeVoice } from "@/lib/welcomeVoice";
 
 interface SplashScreenProps {
   onComplete: () => void;
@@ -17,6 +18,8 @@ const SplashScreen = ({ onComplete }: SplashScreenProps) => {
   const [seasonIdx, setSeasonIdx] = useState(0);
 
   useEffect(() => {
+    // Speak the welcome greeting as soon as the splash opens.
+    playWelcomeVoice();
     const t1 = setTimeout(() => setPhase(1), 1200);
     const t2 = setTimeout(() => setPhase(2), 5400);
     const t3 = setTimeout(() => onComplete(), 6000);
