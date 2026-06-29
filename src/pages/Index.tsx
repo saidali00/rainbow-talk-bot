@@ -33,9 +33,57 @@ const Index = () => {
   const [messagesByConv, setMessagesByConv] = useState<Record<string, Message[]>>({});
   const [isStreaming, setIsStreaming] = useState(false);
   const [model, setModel] = useState<ModelKey>(DEFAULT_MODEL);
+  const [isOffline, setIsOffline] = useState(
+    typeof navigator !== "undefined" ? !navigator.onLine : false
+  );
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const activeMessages = activeConvId ? messagesByConv[activeConvId] || [] : [];
+
+  // ---- Offline support: persist chats locally & detect connection ----
+  const STORAGE_KEY = "wadiai_chats_v1";
+
+  // Load saved chats on mount (available offline)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.conversations) {
+          setConversations(
+            parsed.conversations.map((c: any) => ({ ...c, createdAt: new Date(c.createdAt) }))
+          );
+        }
+        if (parsed?.messagesByConv) setMessagesByConv(parsed.messagesByConv);
+      }
+    } catch (e) {
+      console.warn("Failed to load saved chats", e);
+    }
+  }, []);
+
+  // Save chats whenever they change (so they're readable offline)
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ conversations, messagesByConv })
+      );
+    } catch (e) {
+      console.warn("Failed to save chats", e);
+    }
+  }, [conversations, messagesByConv]);
+
+  // Detect online/offline
+  useEffect(() => {
+    const goOnline = () => setIsOffline(false);
+    const goOffline = () => setIsOffline(true);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
