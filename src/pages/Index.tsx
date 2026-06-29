@@ -319,8 +319,15 @@ const Index = () => {
       />
 
       <main className="flex-1 flex flex-col min-w-0">
-        
-
+        {isOffline && (
+          <div className="flex items-center justify-center gap-2 bg-amber-500/15 text-amber-600 dark:text-amber-400 text-sm font-medium py-2 px-4 border-b border-amber-500/20">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-amber-500 opacity-75 animate-ping" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
+            </span>
+            Offline mode — reading saved chats. New messages need internet.
+          </div>
+        )}
         {activeMessages.length === 0 ? (
           <>
             <WelcomeScreen onSuggestionClick={handleSend} />
