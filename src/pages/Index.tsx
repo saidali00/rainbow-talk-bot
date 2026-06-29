@@ -104,6 +104,14 @@ const Index = () => {
   };
 
   const handleSend = async (text: string, image?: string) => {
+    if (isOffline) {
+      toast({
+        title: "You're offline",
+        description: "New chats need internet. You can still read your saved conversations.",
+        variant: "destructive",
+      });
+      return;
+    }
     let convId = activeConvId;
     if (!convId) {
       convId = createConversation(text);
