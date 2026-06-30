@@ -114,6 +114,16 @@ const ChatSidebar = ({
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500/30 to-indigo-500/30 text-sky-200 font-semibold">NEW</span>
               </Link>
 
+              <Link
+                to="/offline"
+                onClick={handleClose}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                <WifiOff size={18} className="opacity-70" />
+                <span>Offline Mode</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/30 to-teal-500/30 text-emerald-200 font-semibold">NEW</span>
+              </Link>
+
               <button
                 onClick={() => setView("about")}
                 className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
