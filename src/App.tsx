@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound.tsx";
 import Coach from "./pages/Coach.tsx";
 import Mehfil from "./pages/Mehfil.tsx";
 import WadiSearch from "./pages/WadiSearch.tsx";
+import Offline from "./pages/Offline.tsx";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +23,7 @@ const App = () => (
           <Route path="/coach" element={<Coach />} />
           <Route path="/mehfil" element={<Mehfil />} />
           <Route path="/search" element={<WadiSearch />} />
+          <Route path="/offline" element={<Offline />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

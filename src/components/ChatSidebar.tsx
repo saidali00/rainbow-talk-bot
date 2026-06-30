@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemePicker from "./ThemePicker";
 import { applyTheme, getStoredTheme } from "@/lib/themes";
@@ -112,6 +112,16 @@ const ChatSidebar = ({
                 <Globe2 size={18} className="opacity-70" />
                 <span>WadiSearch · Live Web</span>
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-sky-500/30 to-indigo-500/30 text-sky-200 font-semibold">NEW</span>
+              </Link>
+
+              <Link
+                to="/offline"
+                onClick={handleClose}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                <WifiOff size={18} className="opacity-70" />
+                <span>Offline Mode</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-emerald-500/30 to-teal-500/30 text-emerald-200 font-semibold">NEW</span>
               </Link>
 
               <button
