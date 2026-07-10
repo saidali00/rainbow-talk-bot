@@ -34,6 +34,10 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
   const [speaking, setSpeaking] = useState(false);
   const showThinkLoader = !isUser && isStreaming && !content && !generatingImage && !generatingVideo;
 
+  // Detect Urdu / Arabic-script content so we can render it with a proper
+  // Urdu font and right-to-left direction automatically.
+  const isUrduContent = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(content);
+
   // Parse related questions from content
   let mainContent = content;
   let relatedQuestions: string[] = [];
@@ -162,7 +166,14 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
         ) : (
           <div
             className="text-sm leading-relaxed text-foreground"
-            style={{ fontFamily: "var(--answer-font, inherit)" }}
+            style={{
+              fontFamily: isUrduContent
+                ? "'Noto Nastaliq Urdu', var(--answer-font, inherit)"
+                : "var(--answer-font, inherit)",
+              direction: isUrduContent ? "rtl" : undefined,
+              textAlign: isUrduContent ? "right" : undefined,
+              lineHeight: isUrduContent ? 2.2 : undefined,
+            }}
           >
             <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs">
               <ReactMarkdown
