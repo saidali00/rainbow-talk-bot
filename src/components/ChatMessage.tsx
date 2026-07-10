@@ -34,6 +34,10 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
   const [speaking, setSpeaking] = useState(false);
   const showThinkLoader = !isUser && isStreaming && !content && !generatingImage && !generatingVideo;
 
+  // Detect Urdu / Arabic-script content so we can render it with a proper
+  // Urdu font and right-to-left direction automatically.
+  const isUrduContent = /[\u0600-\u06FF\u0750-\u077F\uFB50-\uFDFF\uFE70-\uFEFF]/.test(content);
+
   // Parse related questions from content
   let mainContent = content;
   let relatedQuestions: string[] = [];
