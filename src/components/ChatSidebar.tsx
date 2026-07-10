@@ -68,7 +68,7 @@ const ChatSidebar = ({
 
         {/* Main Menu View */}
         {view === "menu" && (
-          <div className="flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col overflow-y-auto scrollbar-thin">
             <button
               onClick={onNew}
               className="mx-3 mt-3 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium text-sm hover:opacity-90 transition-opacity"
