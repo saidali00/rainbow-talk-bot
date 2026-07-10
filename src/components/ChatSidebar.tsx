@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette, WifiOff } from "lucide-react";
+import { Plus, MessageSquare, Trash2, Menu, X, History, Info, ChevronLeft, Mic, Feather, Globe2, Palette, WifiOff, Type } from "lucide-react";
 import { Link } from "react-router-dom";
 import ThemePicker from "./ThemePicker";
+import FontPicker from "./FontPicker";
 import { applyTheme, getStoredTheme } from "@/lib/themes";
+import { applyFont, getStoredFont } from "@/lib/fonts";
 
 export interface Conversation {
   id: string;
@@ -20,7 +22,7 @@ interface ChatSidebarProps {
   onToggle: () => void;
 }
 
-type SidebarView = "menu" | "history" | "about" | "themes";
+type SidebarView = "menu" | "history" | "about" | "themes" | "fonts";
 
 const ChatSidebar = ({
   conversations,
@@ -35,6 +37,7 @@ const ChatSidebar = ({
 
   useEffect(() => {
     applyTheme(getStoredTheme());
+    applyFont(getStoredFont());
   }, []);
 
   const handleClose = () => {
@@ -140,6 +143,15 @@ const ChatSidebar = ({
                 <span>Themes & Sounds</span>
                 <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-fuchsia-500/30 to-amber-500/30 text-fuchsia-200 font-semibold">8</span>
               </button>
+
+              <button
+                onClick={() => setView("fonts")}
+                className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm hover:bg-sidebar-dark-hover transition-colors text-left"
+              >
+                <Type size={18} className="opacity-70" />
+                <span>Answer Fonts</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-gradient-to-r from-rose-500/30 to-indigo-500/30 text-rose-200 font-semibold">NEW</span>
+              </button>
             </nav>
 
             {/* Social Connect */}
@@ -189,6 +201,8 @@ const ChatSidebar = ({
         )}
 
         {view === "themes" && <ThemePicker onBack={() => setView("menu")} />}
+
+        {view === "fonts" && <FontPicker onBack={() => setView("menu")} />}
 
         {/* Chat History View */}
         {view === "history" && (
