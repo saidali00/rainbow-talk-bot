@@ -160,7 +160,10 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
             <p>{content}</p>
           </div>
         ) : (
-          <div className="text-sm leading-relaxed text-foreground">
+          <div
+            className="text-sm leading-relaxed text-foreground"
+            style={{ fontFamily: "var(--answer-font, inherit)" }}
+          >
             <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs">
               <ReactMarkdown
                 components={{
