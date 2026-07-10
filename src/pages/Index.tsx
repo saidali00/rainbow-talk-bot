@@ -8,6 +8,7 @@ import KoshurHomePopup from "@/components/KoshurHomePopup";
 import { ModelKey, DEFAULT_MODEL } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
+import { isUnsafe, SAFE_REFUSAL } from "@/lib/moderation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -104,6 +105,19 @@ const Index = () => {
   };
 
   const handleSend = async (text: string, image?: string) => {
+    if (isUnsafe(text)) {
+      let convId = activeConvId;
+      if (!convId) convId = createConversation(text);
+      setMessagesByConv((prev) => ({
+        ...prev,
+        [convId!]: [
+          ...(prev[convId!] || []),
+          { id: crypto.randomUUID(), role: "user", content: text, image },
+          { id: crypto.randomUUID(), role: "assistant", content: SAFE_REFUSAL, chatMode: model },
+        ],
+      }));
+      return;
+    }
     if (isOffline) {
       toast({
         title: "You're offline",

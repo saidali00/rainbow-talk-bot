@@ -7,6 +7,8 @@ export interface OfflineReply {
   kind: "math" | "convert" | "time" | "text" | "info" | "fallback";
 }
 
+import { isUnsafe, SAFE_REFUSAL } from "./moderation";
+
 const fmtNum = (n: number) => {
   if (!isFinite(n)) return String(n);
   const r = Math.round(n * 1e10) / 1e10;
@@ -173,6 +175,8 @@ function tryKnowledge(input: string): string | null {
 export function offlineAnswer(input: string): OfflineReply {
   const q = input.trim();
   if (!q) return { text: "Ask me something — math, conversions, date/time, or a quick question.", kind: "info" };
+
+  if (isUnsafe(q)) return { text: SAFE_REFUSAL, kind: "info" };
 
   const math = tryMath(q);
   if (math) return { text: math, kind: "math" };
