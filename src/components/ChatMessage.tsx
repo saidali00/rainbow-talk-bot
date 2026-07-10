@@ -166,7 +166,14 @@ const ChatMessage = ({ role, content, isStreaming, onRelatedClick, image, genera
         ) : (
           <div
             className="text-sm leading-relaxed text-foreground"
-            style={{ fontFamily: "var(--answer-font, inherit)" }}
+            style={{
+              fontFamily: isUrduContent
+                ? "'Noto Nastaliq Urdu', var(--answer-font, inherit)"
+                : "var(--answer-font, inherit)",
+              direction: isUrduContent ? "rtl" : undefined,
+              textAlign: isUrduContent ? "right" : undefined,
+              lineHeight: isUrduContent ? 2.2 : undefined,
+            }}
           >
             <div className="prose prose-sm max-w-none prose-headings:text-foreground prose-p:text-foreground prose-strong:text-foreground prose-code:text-primary prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:text-xs">
               <ReactMarkdown
