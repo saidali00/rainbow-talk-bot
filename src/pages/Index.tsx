@@ -8,6 +8,7 @@ import KoshurHomePopup from "@/components/KoshurHomePopup";
 import { ModelKey, DEFAULT_MODEL } from "@/components/ModelPicker";
 
 import { streamChat, ChatMessage as AIChatMessage } from "@/lib/openrouter";
+import { isUnsafe, SAFE_REFUSAL } from "@/lib/moderation";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
